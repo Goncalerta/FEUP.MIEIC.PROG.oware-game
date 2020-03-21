@@ -7,10 +7,6 @@ Gameboard::Gameboard(): p1_score(0), p2_score(0) {
     }
 }
 
-bool Gameboard::IsOver() {
-    return p1_score == 25 || p2_score == 25 || (p1_score == 24 && p2_score == 24);
-}
-
 bool Gameboard::HasSeeds(Player p) {
     int start = p == PlayerOne? 0 : 6;
     for(int i = start; i < start+6; i++) {
@@ -77,7 +73,7 @@ bool Gameboard::IsCapturable(Player p, CaptureRange r) {
 
 // make sure the player doesn't capture himself...
 void Gameboard::Capture(Player p, CaptureRange r) {
-    int score;
+    int score = 0;
 
     for(int i = r.begin; i <= r.end; i++) {
         score += pits[i];
@@ -87,22 +83,6 @@ void Gameboard::Capture(Player p, CaptureRange r) {
     if(p == PlayerOne) {
         p1_score += score;
     } else {
-        p1_score = score;
+        p2_score += score;
     }
-}
-
-void Gameboard::Draw() {
-    std::cout << "              F  E  D  C  B  A" << std::endl;
-    std::cout << "Player Two    ";
-    for(int i = 11; i >= 6; i--) {
-        std::cout << pits[i] << "  ";
-    }
-    std::cout << "   Score: " << p2_score;
-    std::cout << std::endl << "         -----------------------------" << std::endl;
-    std::cout << "Player One    ";
-    for(int i = 0; i <= 5; i++) {
-        std::cout << pits[i] << "  ";
-    }
-    std::cout << "   Score: " << p1_score;
-    std::cout << std::endl << "              a  b  c  d  e  f" << std::endl;
 }
