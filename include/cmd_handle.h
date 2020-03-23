@@ -5,13 +5,13 @@ struct CmdHandle;
 int CharToPit(char c);
 
 #include "gameboard.h"
-#include "game.h"
 
 struct CmdHandle {
     CmdHandle();
     
     void Draw(Gameboard &board);
-    int ChoosePit(Game &game);
+    void SetPit(int pit, int value);
+    int ChoosePit(Player p);
 };
 
 #endif

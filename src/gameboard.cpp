@@ -9,7 +9,7 @@ Gameboard::Gameboard(): p1_score(0), p2_score(0) {
 
 Range Gameboard::PlayerBoard(Player p) {
     int begin = p == PlayerOne? 6 : 0;
-    int end = end + 5;
+    int end = begin + 5;
     
     return Range(begin, end);
 }
@@ -37,10 +37,12 @@ bool Gameboard::IsSowable(Player p, int pit) {
     return player_zone_end_pit - pit + 1 < seeds;
 }
 
-int Gameboard::Sow(int pit) {
-    int seeds = pits[pit];
-    pits[pit] = 0;
+int Gameboard::Sow(int pit, CmdHandle &handle) {
     int current_pit = pit;
+    int seeds = pits[pit];
+
+    pits[pit] = 0;
+    handle.SetPit(pit, 0);
 
     while(seeds != 0) {
         current_pit++;
@@ -48,6 +50,8 @@ int Gameboard::Sow(int pit) {
         if(current_pit == pit) continue;
 
         pits[current_pit]++;
+        handle.SetPit(current_pit, pits[current_pit]);
+
         seeds--;
     }
 

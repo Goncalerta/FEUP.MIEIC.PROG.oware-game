@@ -1,6 +1,8 @@
 #include "cmd_handle.h"
 #include "cmd_utils.h"
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 CmdHandle::CmdHandle() {}
 
@@ -21,11 +23,26 @@ void CmdHandle::Draw(Gameboard &board) {
     std::cout << std::endl << "              a  b  c  d  e  f" << std::endl;
 }
 
-int CmdHandle::ChoosePit(Game &game) {
+void CmdHandle::SetPit(int pit, int value) {
+    int x, y;
+    if(pit < 6) {
+        y = 3;
+        x = 14 + 3*pit;
+    } else {
+        y = 1;
+        x = 14 + 3*(11 - pit);
+    }
+
+    gotoxy(x, y);
+    std::cout << value;
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+}
+
+int CmdHandle::ChoosePit(Player p) {
     char user_input;
 
     std::cout << std::endl << std::endl;
-    bool playing_p1 = game.current_player == PlayerOne;
+    bool playing_p1 = p == PlayerOne;
     std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
     std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
     // TODO improve error handling for invalid inputs (ex. multiple inputs separated by space, non chars etc)

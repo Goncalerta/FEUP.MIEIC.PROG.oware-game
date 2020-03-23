@@ -5,6 +5,7 @@ struct Gameboard;
 
 #include "player.h"
 #include "range.h"
+#include "cmd_handle.h"
 
 struct Gameboard {
     int p1_score;
@@ -20,7 +21,7 @@ struct Gameboard {
     bool IsSowable(Player p, int pit);
 
     // Returns the last pit sowed.
-    int Sow(int pit);
+    int Sow(int pit, CmdHandle &handle);
 
     bool IsCapturable(Player p, int pit);
     bool IsCapturable(Range playerboard, int pit);

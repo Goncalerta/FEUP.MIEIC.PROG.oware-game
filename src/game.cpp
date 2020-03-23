@@ -10,11 +10,12 @@ bool Game::IsOver() {
 
 void Game::PlayTurn(CmdHandle &handle) {
     handle.Draw(board);
-    int chosen_pit = handle.ChoosePit(*this);
+    int chosen_pit = handle.ChoosePit(current_player);
     
     // TODO handle should be the one responsible for returning a valid pit
     if (chosen_pit != -1 && board.IsSowable(current_player, chosen_pit)) {
-        int last_sowed = board.Sow(chosen_pit);
+        int last_sowed = board.Sow(chosen_pit, handle);
+
         if(board.IsCapturable(current_player, last_sowed)) {
             Range capture = board.CaptureRange(current_player, last_sowed);
             if(!board.IsGrandSlam(current_player, capture)) {
