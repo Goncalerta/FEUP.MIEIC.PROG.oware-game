@@ -13,18 +13,24 @@ struct Gameboard {
 
     Gameboard();
 
+    Range PlayerBoard(Player p);
+
     bool HasSeeds(Player p);
 
     bool IsSowable(Player p, int pit);
 
-    CaptureRange Sow(int pit);
+    // Returns the last pit sowed.
+    int Sow(int pit);
 
-    // TODO board has info of current player. This fucntion should either
-    // be in a struct without that info or not receive Player p.
-    bool IsCapturable(Player p, CaptureRange r);
+    bool IsCapturable(Player p, int pit);
+    bool IsCapturable(Range playerboard, int pit);
+
+    Range CaptureRange(Player p, int pit);
 
     // make sure the player doesn't capture himself...
-    void Capture(Player p, CaptureRange r);
+    void Capture(Player p, Range r);
+
+    bool IsGrandSlam(Player p, Range r);
 };
 
 #endif

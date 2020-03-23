@@ -7,6 +7,13 @@ Gameboard::Gameboard(): p1_score(0), p2_score(0) {
     }
 }
 
+Range Gameboard::PlayerBoard(Player p) {
+    int begin = p == PlayerOne? 6 : 0;
+    int end = end + 5;
+    
+    return Range(begin, end);
+}
+
 bool Gameboard::HasSeeds(Player p) {
     int start = p == PlayerOne? 0 : 6;
     for(int i = start; i < start+6; i++) {
@@ -30,11 +37,11 @@ bool Gameboard::IsSowable(Player p, int pit) {
     return player_zone_end_pit - pit + 1 < seeds;
 }
 
-CaptureRange Gameboard::Sow(int pit) {
+int Gameboard::Sow(int pit) {
     int seeds = pits[pit];
     pits[pit] = 0;
     int current_pit = pit;
-    int capture_begin = -1; // -1 means no capture will happen
+
     while(seeds != 0) {
         current_pit++;
         if(current_pit == 12) current_pit = 0;
@@ -42,37 +49,36 @@ CaptureRange Gameboard::Sow(int pit) {
 
         pits[current_pit]++;
         seeds--;
-        if(pits[current_pit] == 2 || pits[current_pit] == 3) {
-            if(capture_begin == -1) capture_begin = current_pit;
-        } else {
-            capture_begin = -1;
-        }
     }
-    int capture_end = current_pit;
 
-    // TODO trim capture range to enemy field
-    return CaptureRange(capture_begin, capture_end);
+    return current_pit;
 }
 
 // TODO board has info of current player. This fucntion should either
 // be in a struct without that info or not receive Player p.
-bool Gameboard::IsCapturable(Player p, CaptureRange r) {
-    if(!r.IsValid()) return false;
-    int i = p == PlayerOne? 6 : 0;
-    int end = i + 6;
-    while(i < end) {
-        if(i == r.begin) {
-            i = r.end + 1;
-        } else {
-            if(pits[i] != 0) return true;
-            i++;
-        }
-    }
-    return false;
+bool Gameboard::IsCapturable(Player p, int pit) {
+    return IsCapturable(PlayerBoard(p), pit);
 }
 
-// make sure the player doesn't capture himself...
-void Gameboard::Capture(Player p, CaptureRange r) {
+bool Gameboard::IsCapturable(Range player_board, int pit) {
+    // A player can't capture their own board
+    if(player_board.Contains(pit)) return false;
+    return pits[pit] == 2 || pits[pit] == 3;
+}
+
+Range Gameboard::CaptureRange(Player p, int pit) {
+    int end = pit;
+    int begin = end - 1;
+    Range player_board = PlayerBoard(p);
+
+    while(IsCapturable(player_board, begin)) {
+        begin--;
+    }
+
+    return Range(begin, end);
+}
+
+void Gameboard::Capture(Player p, Range r) {
     int score = 0;
 
     for(int i = r.begin; i <= r.end; i++) {
@@ -85,4 +91,8 @@ void Gameboard::Capture(Player p, CaptureRange r) {
     } else {
         p2_score += score;
     }
+}
+
+bool Gameboard::IsGrandSlam(Player p, Range capture) {
+    return capture == PlayerBoard(Opponent(p));
 }

@@ -2,17 +2,16 @@
 #define RANGE_H
 
 struct Range {
-    int begin; // The first value of the range, inclusive. -1 if invalid range
+    int begin; // The first value of the range, inclusive
     int end; // The last value of the range, inclusive
 
     // Constructs a range with the given begin and end
-    // The constructed range will always be assumed to be valid, unless begin == -1
+    // The constructed range will always be assumed to be valid
     Range(int begin, int end);
 
-    // Returns whether this Range is valid (invalid ranges must have begin == -1)
-    bool IsValid();
-};
+    bool Contains(int n);
 
-typedef struct Range CaptureRange;
+    bool operator==(Range const &r);
+};
 
 #endif
