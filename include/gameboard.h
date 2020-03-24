@@ -2,6 +2,12 @@
 #define GAMEBOARD_H
 
 struct Gameboard;
+enum PitSowableState {
+    ValidPit,
+    PitInOpponentZone,
+    EmptyPit,
+    OpponentOutOfSeeds,
+};
 
 #include "player.h"
 #include "range.h"
@@ -18,7 +24,7 @@ struct Gameboard {
 
     bool HasSeeds(Player p);
 
-    bool IsSowable(Player p, int pit);
+    PitSowableState Sowable(Player p, int pit);
 
     // Returns the last pit sowed.
     int Sow(int pit, CmdHandle &handle);

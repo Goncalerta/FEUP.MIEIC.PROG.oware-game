@@ -11,7 +11,7 @@ struct CmdHandle {
     
     void Draw(Gameboard &board);
     void SetPit(int pit, int value);
-    int ChoosePit(Player p);
+    int ChoosePit(Player p, Gameboard &board);
 };
 
 #endif

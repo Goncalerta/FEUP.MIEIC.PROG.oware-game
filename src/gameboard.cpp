@@ -8,7 +8,7 @@ Gameboard::Gameboard(): p1_score(0), p2_score(0) {
 }
 
 Range Gameboard::PlayerBoard(Player p) {
-    int begin = p == PlayerOne? 6 : 0;
+    int begin = p == PlayerOne? 0 : 6;
     int end = begin + 5;
     
     return Range(begin, end);
@@ -22,19 +22,23 @@ bool Gameboard::HasSeeds(Player p) {
     return false;
 }
 
-bool Gameboard::IsSowable(Player p, int pit) {
+PitSowableState Gameboard::Sowable(Player p, int pit) {
     bool in_player_zone = PitZone(pit) == p;
-    bool in_enemy_zone = !in_player_zone;
 
     // Must be a nonempty pit in the current player zone
-    if(pits[pit] == 0 || !in_player_zone) return false;
+    if(!in_player_zone) return PitInOpponentZone;
+    if(pits[pit] == 0) return EmptyPit;
+
     // If the enemy has nonempty pits, all is fine
-    if(HasSeeds(Opponent(p))) return true;
+    if(HasSeeds(Opponent(p))) return ValidPit;
+    
     // Otherwise, the player must make a move that gives
     // the opponent seeds.
     int player_zone_end_pit = p == PlayerOne? 5 : 11;
-    int seeds = pits[pit];
-    return player_zone_end_pit - pit + 1 < seeds;
+    bool gives_seeds = player_zone_end_pit - pit + 1 < pits[pit];
+    if(!gives_seeds) return OpponentOutOfSeeds;
+
+    return ValidPit;
 }
 
 int Gameboard::Sow(int pit, CmdHandle &handle) {
@@ -72,10 +76,10 @@ bool Gameboard::IsCapturable(Range player_board, int pit) {
 
 Range Gameboard::CaptureRange(Player p, int pit) {
     int end = pit;
-    int begin = end - 1;
+    int begin = end;
     Range player_board = PlayerBoard(p);
 
-    while(IsCapturable(player_board, begin)) {
+    while(IsCapturable(player_board, begin-1)) {
         begin--;
     }
 
@@ -97,6 +101,11 @@ void Gameboard::Capture(Player p, Range r) {
     }
 }
 
+// TODO grandslam can happen even if capture is not the whole board: when player has empty pits
 bool Gameboard::IsGrandSlam(Player p, Range capture) {
-    return capture == PlayerBoard(Opponent(p));
+    Range opponent_board = PlayerBoard(Opponent(p));
+    for(int i = opponent_board.begin; i <= opponent_board.end; i++) {
+        if(pits[i] != 0 && !capture.Contains(i)) return false;
+    }
+    return true;
 }

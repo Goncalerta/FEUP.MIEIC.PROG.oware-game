@@ -38,16 +38,61 @@ void CmdHandle::SetPit(int pit, int value) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
-int CmdHandle::ChoosePit(Player p) {
-    char user_input;
-
-    std::cout << std::endl << std::endl;
+int CmdHandle::ChoosePit(Player p, Gameboard &board) {
+    gotoxy(0, 8);
     bool playing_p1 = p == PlayerOne;
     std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
-    std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
-    // TODO improve error handling for invalid inputs (ex. multiple inputs separated by space, non chars etc)
-    std::cin >> user_input;
-    return CharToPit(user_input);
+
+    char user_input;
+    int chosen_pit;
+    bool valid_input;
+    PitSowableState sowable_state;
+
+    gotoxy(0, 8+1);
+    do {
+        valid_input = false;
+        std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
+        std::cin >> user_input;
+
+        if(std::cin.fail() || std::cin.peek() != '\n') {
+            if(std::cin.eof()) {
+                // TODO stream closed
+            }
+            
+            // TODO better number than 100000 std::numeric_limits<std::streamsize>
+            std::cin.ignore(100000, '\n');
+            gotoxy(0, 8+1);
+            std::cout << "The given input is invalid." << std::endl;
+            continue;
+        }
+
+        chosen_pit = CharToPit(user_input);
+        if(chosen_pit == -1) {
+            gotoxy(0, 8+1);
+            std::cout << "The given input is invalid." << std::endl;
+            continue;
+        }
+
+        valid_input = true;
+        sowable_state = board.Sowable(p, chosen_pit);
+
+        switch(sowable_state) {
+            case PitInOpponentZone:
+                gotoxy(0, 8+1);
+                std::cout << "Pit `" << user_input << "` does not belong to player " << (playing_p1? 1 : 2) << "." << std::endl;
+                break;
+            case EmptyPit:
+                gotoxy(0, 8+1);
+                std::cout << "Pit `" << user_input << "` is empty." << std::endl;
+                break;
+            case OpponentOutOfSeeds:
+                gotoxy(0, 8+1);
+                std::cout << "Player " << (playing_p1? 2 : 1) << " is out of seeds. Your next move must give him some." << std::endl;
+                break; 
+        }
+    } while(!valid_input || sowable_state != ValidPit);
+
+    return chosen_pit;
 }
 
 int CharToPit(char c) {
