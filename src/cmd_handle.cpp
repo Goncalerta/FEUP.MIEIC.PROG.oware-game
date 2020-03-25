@@ -11,6 +11,7 @@
 CmdHandle::CmdHandle() {}
 
 void CmdHandle::Draw(Gameboard &board) {
+    // TODO prettify (color for each opponent, for avaliable and not avaliable pits, etc) (double digits)
     clrscr();
     std::cout << "              F  E  D  C  B  A" << std::endl;
     std::cout << "Player Two    ";
@@ -40,6 +41,24 @@ void CmdHandle::SetPit(int pit, int value) {
     gotoxy(x, y);
     std::cout << value;
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+}
+
+int CharToPit(char c) {
+    switch(c) {
+        case 'a': return 0;
+        case 'b': return 1;
+        case 'c': return 2;
+        case 'd': return 3;
+        case 'e': return 4;
+        case 'f': return 5;
+        case 'A': return 6;
+        case 'B': return 7;
+        case 'C': return 8;
+        case 'D': return 9;
+        case 'E': return 10;
+        case 'F': return 11;
+        default: return -1;
+    }
 }
 
 int CmdHandle::ChoosePit(Player p, Gameboard &board) {
@@ -114,20 +133,24 @@ int CmdHandle::ChoosePit(Player p, Gameboard &board) {
     return chosen_pit;
 }
 
-int CharToPit(char c) {
-    switch(c) {
-        case 'a': return 0;
-        case 'b': return 1;
-        case 'c': return 2;
-        case 'd': return 3;
-        case 'e': return 4;
-        case 'f': return 5;
-        case 'A': return 6;
-        case 'B': return 7;
-        case 'C': return 8;
-        case 'D': return 9;
-        case 'E': return 10;
-        case 'F': return 11;
-        default: return -1;
+void set_cursor_on_pit(int pit) {
+    int x, y;
+    if(pit < 6) {
+        y = 3;
+        x = 14 + 3*pit;
+    } else {
+        y = 1;
+        x = 14 + 3*(11 - pit);
     }
+    gotoxy(x, y);
+}
+
+void CmdHandle::HighlightCapture(Range capture, Gameboard &board) {
+    setcolor(BLACK, RED);
+    for(int i = capture.begin; i <= capture.end; i++) {
+        set_cursor_on_pit(i);
+        std::cout << board.pits[i];
+    }
+    setcolor(LIGHTGRAY, BLACK);
+    std::this_thread::sleep_for(std::chrono::milliseconds(600));
 }

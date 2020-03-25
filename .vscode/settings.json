@@ -45,7 +45,12 @@
         "tuple": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "cctype": "cpp",
+        "iomanip": "cpp",
+        "string": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp"
     },
     "terminal.integrated.shell.windows": "cmd.exe"
 }
