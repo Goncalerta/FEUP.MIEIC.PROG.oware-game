@@ -1,8 +1,12 @@
+#define NOMINMAX
 #include "cmd_handle.h"
 #include "cmd_utils.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <ios>
+#include <limits>
+#include <string>
 
 CmdHandle::CmdHandle() {}
 
@@ -39,37 +43,47 @@ void CmdHandle::SetPit(int pit, int value) {
 }
 
 int CmdHandle::ChoosePit(Player p, Gameboard &board) {
-    gotoxy(0, 8);
-    bool playing_p1 = p == PlayerOne;
-    std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
-
     char user_input;
     int chosen_pit;
     bool valid_input;
+    std::string warning_message = "";
     PitSowableState sowable_state;
 
-    gotoxy(0, 8+1);
     do {
-        valid_input = false;
+        // Draw board and information about the state of the game
+        // before asking user for input
+        bool playing_p1 = p == PlayerOne;
+
+        Draw(board);
+        gotoxy(0, 8);
+        std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
+        if(warning_message != "") std::cout << warning_message << std::endl;
         std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
         std::cin >> user_input;
 
-        if(std::cin.fail() || std::cin.peek() != '\n') {
+        // Validate and parse input
+        if(std::cin.fail()) {
             if(std::cin.eof()) {
-                // TODO stream closed
+                // TODO what should happen if stream closed? (Ctrl-z and then ENTER)
             }
-            
-            // TODO better number than 100000 std::numeric_limits<std::streamsize>
-            std::cin.ignore(100000, '\n');
-            gotoxy(0, 8+1);
-            std::cout << "The given input is invalid." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            warning_message = "The given input is invalid.";
+            valid_input = false;
             continue;
-        }
+        } 
 
+        if(std::cin.peek() != '\n') {
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            warning_message = "The given input is invalid.";
+            valid_input = false;
+            continue;
+        } 
+        
         chosen_pit = CharToPit(user_input);
         if(chosen_pit == -1) {
-            gotoxy(0, 8+1);
-            std::cout << "The given input is invalid." << std::endl;
+            warning_message = "The given input is invalid.";
+            valid_input = false;
             continue;
         }
 
@@ -78,16 +92,21 @@ int CmdHandle::ChoosePit(Player p, Gameboard &board) {
 
         switch(sowable_state) {
             case PitInOpponentZone:
-                gotoxy(0, 8+1);
-                std::cout << "Pit `" << user_input << "` does not belong to player " << (playing_p1? 1 : 2) << "." << std::endl;
+                warning_message = "Pit `"; 
+                warning_message.push_back(user_input);
+                warning_message.append("` does not belong to player ");
+                warning_message.push_back(playing_p1? '1' : '2');
+                warning_message.append(".");
                 break;
             case EmptyPit:
-                gotoxy(0, 8+1);
-                std::cout << "Pit `" << user_input << "` is empty." << std::endl;
+                warning_message = "Pit `";
+                warning_message.push_back(user_input);
+                warning_message.append("` is empty.");
                 break;
             case OpponentOutOfSeeds:
-                gotoxy(0, 8+1);
-                std::cout << "Player " << (playing_p1? 2 : 1) << " is out of seeds. Your next move must give him some." << std::endl;
+                warning_message = "Player ";
+                warning_message.push_back(playing_p1? '2' : '1'); 
+                warning_message.append(" is out of seeds. Your next move must give him some.");
                 break; 
         }
     } while(!valid_input || sowable_state != ValidPit);

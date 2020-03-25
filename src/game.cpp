@@ -9,7 +9,6 @@ bool Game::IsOver() {
 
 
 void Game::PlayTurn(CmdHandle &handle) {
-    handle.Draw(board);
     int chosen_pit = handle.ChoosePit(current_player, board);
     int last_sowed = board.Sow(chosen_pit, handle);
 

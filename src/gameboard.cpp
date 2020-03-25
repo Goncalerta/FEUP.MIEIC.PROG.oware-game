@@ -35,7 +35,7 @@ PitSowableState Gameboard::Sowable(Player p, int pit) {
     // Otherwise, the player must make a move that gives
     // the opponent seeds.
     int player_zone_end_pit = p == PlayerOne? 5 : 11;
-    bool gives_seeds = player_zone_end_pit - pit + 1 < pits[pit];
+    bool gives_seeds = pits[pit] > player_zone_end_pit - pit;
     if(!gives_seeds) return OpponentOutOfSeeds;
 
     return ValidPit;
@@ -62,8 +62,6 @@ int Gameboard::Sow(int pit, CmdHandle &handle) {
     return current_pit;
 }
 
-// TODO board has info of current player. This fucntion should either
-// be in a struct without that info or not receive Player p.
 bool Gameboard::IsCapturable(Player p, int pit) {
     return IsCapturable(PlayerBoard(p), pit);
 }
@@ -101,7 +99,6 @@ void Gameboard::Capture(Player p, Range r) {
     }
 }
 
-// TODO grandslam can happen even if capture is not the whole board: when player has empty pits
 bool Gameboard::IsGrandSlam(Player p, Range capture) {
     Range opponent_board = PlayerBoard(Opponent(p));
     for(int i = opponent_board.begin; i <= opponent_board.end; i++) {
