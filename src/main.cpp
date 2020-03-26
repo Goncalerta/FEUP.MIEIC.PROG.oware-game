@@ -1,10 +1,9 @@
 #include <iostream>
 #include "game.h"
 
-// TODO player give up
-// TODO agree endless cycle
 // TODO menu
 // TODO bot
+// TODO win/lose/draw
 
 int main() {
     Game game = Game();
@@ -12,6 +11,5 @@ int main() {
 
     while(!game.IsOver()) {
         game.PlayTurn(handle);
-        
     }
 }
