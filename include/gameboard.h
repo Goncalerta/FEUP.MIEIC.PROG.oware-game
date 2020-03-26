@@ -20,9 +20,8 @@ struct Gameboard {
 
     Gameboard();
 
-    Range PlayerBoard(Player p);
-
     bool HasSeeds(Player p);
+    bool HasLegalMove(Player p);
 
     PitSowableState Sowable(Player p, int pit);
 

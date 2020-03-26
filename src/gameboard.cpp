@@ -7,12 +7,6 @@ Gameboard::Gameboard(): p1_score(0), p2_score(0) {
     }
 }
 
-Range Gameboard::PlayerBoard(Player p) {
-    int begin = p == PlayerOne? 0 : 6;
-    int end = begin + 5;
-    
-    return Range(begin, end);
-}
 
 bool Gameboard::HasSeeds(Player p) {
     int start = p == PlayerOne? 0 : 6;
@@ -21,6 +15,19 @@ bool Gameboard::HasSeeds(Player p) {
     }
     return false;
 }
+
+
+bool Gameboard::HasLegalMove(Player p) {
+    Range player_board = PlayerBoard(p);
+    bool opponent_has_seeds = HasSeeds(Opponent(p));
+    
+    for(int i = player_board.begin; i <= player_board.end; i++) {
+        if(pits[i] == 0) continue;
+        if(opponent_has_seeds || pits[i] > player_board.end - i) return true;
+    }
+    return false;
+}
+
 
 PitSowableState Gameboard::Sowable(Player p, int pit) {
     bool in_player_zone = PitZone(pit) == p;
