@@ -1,6 +1,7 @@
 #ifndef CMD_UTILS_H
 #define CMD_UTILS_H
 
+#define NOMINMAX
 #include <iostream>
 #include <ctime>
 #include <cstdlib>

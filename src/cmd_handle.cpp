@@ -1,4 +1,3 @@
-#define NOMINMAX
 #include "cmd_handle.h"
 #include "cmd_utils.h"
 #include <iostream>
@@ -12,7 +11,8 @@
 CmdHandle::CmdHandle() {}
 
 void CmdHandle::Draw(Gameboard &board) {
-    // TODO prettify (color for each opponent, for avaliable and not avaliable pits, etc)
+    // TODO prettify (color for each opponent, for avaliable and not avaliable pits, etc) (show how to withdraw and claim endless cycle)
+    // TODO update score animation
     clrscr();
     std::cout << "               F   E   D   C   B   A" << std::endl;
     std::cout << "Player Two    ";
@@ -91,8 +91,10 @@ int CmdHandle::ChoosePit(Player p, Gameboard &board) {
 
         // Validate and parse input
         if(std::cin.fail()) {
+            // Closing stdin in game is interpreted as withdrawal
             if(std::cin.eof()) {
-                // TODO what should happen if stream closed? (Ctrl-z and then ENTER)
+                std::cin.clear();
+                return WITHDRAW;
             }
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -108,7 +110,6 @@ int CmdHandle::ChoosePit(Player p, Gameboard &board) {
             continue;
         } 
         
-        // TODO custom error message for using another player's special char
         if(user_input == QuitChar(p)) return WITHDRAW;
         if(user_input == ClaimEndlessCycleChar(p)) return CLAIM_ENDLESS_CYCLE;
         if(user_input == QuitChar(Opponent(p))) {
@@ -192,7 +193,7 @@ bool CmdHandle::ask_endless_cycle(Player p) {
     char opponent_agree_char = p == PlayerOne? 'P' : 'p';
 
     std::cout << "Player " << (p == PlayerOne? "2" : "1") << " claims that the game has been reduced to an endless cycle." << std::endl;
-    std::cout << "Player 2, input '" << agree_char << "' to agree, or any other letter otherwise: ";
+    std::cout << "Player " << (p == PlayerOne? "1" : "2") << ", input '" << agree_char << "' to agree, or any other letter otherwise: ";
 
     // The prompt will only be repeated in case the player uses opponent's agree character
     // that is because they are very similiar, and so could be a source of confusion.

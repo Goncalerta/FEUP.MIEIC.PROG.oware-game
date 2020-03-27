@@ -21,7 +21,7 @@ struct Game {
     Game();
 
     void PlayTurn(CmdHandle &handle);
-    bool IsOver();
+    void UpdateWinState();
 };
 
 #endif
