@@ -48,12 +48,12 @@ PitSowableState Gameboard::Sowable(Player p, int pit) {
     return ValidPit;
 }
 
-int Gameboard::Sow(int pit, CmdHandle &handle) {
+int Gameboard::Sow(int pit, SetPitAnimator set_pit) {
     int current_pit = pit;
     int seeds = pits[pit];
 
     pits[pit] = 0;
-    handle.SetPit(pit, 0);
+    set_pit(pit, 0);
 
     while(seeds != 0) {
         current_pit++;
@@ -61,7 +61,7 @@ int Gameboard::Sow(int pit, CmdHandle &handle) {
         if(current_pit == pit) continue;
 
         pits[current_pit]++;
-        handle.SetPit(current_pit, pits[current_pit]);
+        set_pit(current_pit, pits[current_pit]);
 
         seeds--;
     }

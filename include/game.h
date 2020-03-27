@@ -12,6 +12,7 @@ enum WinState {
 #include "gameboard.h"
 #include "player.h"
 #include "cmd_handle.h"
+#include "controller.h"
 
 struct Game {
     Gameboard board;
@@ -20,7 +21,7 @@ struct Game {
 
     Game();
 
-    void PlayTurn(CmdHandle &handle);
+    void PlayTurn(Controller *p1_controller, Controller *p2_controller);
     void UpdateWinState();
 };
 

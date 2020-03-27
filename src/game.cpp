@@ -9,15 +9,19 @@ void Game::UpdateWinState() {
     else if(board.p1_score == 24 && board.p2_score == 24) win_state = Draw;
 }
 
-void Game::PlayTurn(CmdHandle &handle) {
-    if(board.HasLegalMove(current_player)) {
-        int choice = handle.ChoosePit(current_player, board);
+void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
+    Controller *player_controller = (current_player == PlayerOne? p1_controller : p2_controller);
+    Controller *opponent_controller = (current_player == PlayerOne? p2_controller : p1_controller);
 
-        if(choice == WITHDRAW) {
+    if(board.HasLegalMove(current_player)) {
+        DrawGame(board);
+        int choice = player_controller->ChoosePit(board);
+
+        if(choice == SURRENDER) {
             win_state = current_player == PlayerOne? PlayerTwoWins : PlayerOneWins;
         } else if(choice == CLAIM_ENDLESS_CYCLE) {
 
-            bool opponent_claim = handle.ask_endless_cycle(Opponent(current_player));
+            bool opponent_claim = opponent_controller->ask_endless_cycle();
             if(opponent_claim) {
                 // TODO claim animation
                 board.Capture(current_player, PlayerBoard(current_player));
@@ -26,13 +30,13 @@ void Game::PlayTurn(CmdHandle &handle) {
             }
 
         } else { 
-            int last_sowed = board.Sow(choice, handle);
+            int last_sowed = board.Sow(choice, SetPit);
 
             if(board.IsCapturable(current_player, last_sowed)) {
                 Range capture = board.CaptureRange(current_player, last_sowed);
                 // "Grand Slams" cancel capture in abapa version
                 if(!board.IsGrandSlam(current_player, capture)) {
-                    handle.HighlightCapture(capture, board);
+                    HighlightCapture(capture, board);
                     board.Capture(current_player, capture);
                     UpdateWinState();
                 }
@@ -42,7 +46,7 @@ void Game::PlayTurn(CmdHandle &handle) {
         }
     } else {
         Range capture = PlayerBoard(current_player);
-        handle.HighlightCapture(capture, board);
+        HighlightCapture(capture, board);
         board.Capture(current_player, capture);
         UpdateWinState();
     }

@@ -75,12 +75,13 @@ void draw_gameover_screen(Game &game) {
     }
     std::cout << "Player 1 score: " << game.board.p1_score << "\t";
     std::cout << "Player 2 score: " << game.board.p2_score << std::endl;
+    // TODO ignore input while sleeping
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }
 
 int main() {
     Game game;
-    CmdHandle handle = CmdHandle();
+    Controller *p1_controller, *p2_controller;
 
     while(true) {
         clrscr();
@@ -88,13 +89,25 @@ int main() {
         switch(prompt_player()) {
             case PlayerVsPlayer:
                 game = Game();
+                p1_controller = new CmdController(PlayerOne);
+                p2_controller = new CmdController(PlayerTwo);
+
                 while(game.win_state == OngoingGame) {
-                    game.PlayTurn(handle);
+                    game.PlayTurn(p1_controller, p2_controller);
                 }
                 clrscr();
                 draw_gameover_screen(game);
                 break;
             case PlayerVsAi:
+                game = Game();
+                p1_controller = new CmdController(PlayerOne);
+                p2_controller = new BotController(PlayerTwo);
+
+                while(game.win_state == OngoingGame) {
+                    game.PlayTurn(p1_controller, p2_controller);
+                }
+                clrscr();
+                draw_gameover_screen(game);
                 break;
             case ExitGame:
                 return 0;

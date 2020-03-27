@@ -1,6 +1,8 @@
 #ifndef GAMEBOARD_H
 #define GAMEBOARD_H
 
+typedef void (*SetPitAnimator)(int, int);
+
 struct Gameboard;
 enum PitSowableState {
     ValidPit,
@@ -26,7 +28,7 @@ struct Gameboard {
     PitSowableState Sowable(Player p, int pit);
 
     // Returns the last pit sowed.
-    int Sow(int pit, CmdHandle &handle);
+    int Sow(int pit, SetPitAnimator set_pit);
 
     bool IsCapturable(Player p, int pit);
     bool IsCapturable(Range playerboard, int pit);
