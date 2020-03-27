@@ -20,7 +20,7 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
         if(choice == SURRENDER) {
             win_state = current_player == PlayerOne? PlayerTwoWins : PlayerOneWins;
         } else if(choice == CLAIM_ENDLESS_CYCLE) {
-
+            // TODO endless cycle only when both players have seeds in their zones
             bool opponent_claim = opponent_controller->ask_endless_cycle();
             if(opponent_claim) {
                 // TODO claim animation

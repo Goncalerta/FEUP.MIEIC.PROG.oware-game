@@ -7,6 +7,14 @@ Gameboard::Gameboard(): p1_score(0), p2_score(0) {
     }
 }
 
+int Gameboard::PlayerScore(Player p) {
+    if(p == PlayerOne) {
+        return p1_score;
+    } else {
+        return p2_score;
+    }
+}
+
 
 bool Gameboard::HasSeeds(Player p) {
     int start = p == PlayerOne? 0 : 6;
@@ -53,7 +61,7 @@ int Gameboard::Sow(int pit, SetPitAnimator set_pit) {
     int seeds = pits[pit];
 
     pits[pit] = 0;
-    set_pit(pit, 0);
+    if(set_pit) set_pit(pit, 0);
 
     while(seeds != 0) {
         current_pit++;
@@ -61,7 +69,7 @@ int Gameboard::Sow(int pit, SetPitAnimator set_pit) {
         if(current_pit == pit) continue;
 
         pits[current_pit]++;
-        set_pit(current_pit, pits[current_pit]);
+        if(set_pit) set_pit(current_pit, pits[current_pit]);
 
         seeds--;
     }
@@ -91,13 +99,19 @@ Range Gameboard::CaptureRange(Player p, int pit) {
     return Range(begin, end);
 }
 
-void Gameboard::Capture(Player p, Range r) {
+int Gameboard::CaptureScore(Range r) {
     int score = 0;
 
     for(int i = r.begin; i <= r.end; i++) {
         score += pits[i];
         pits[i] = 0;
     }
+    
+    return score;
+}
+
+void Gameboard::Capture(Player p, Range r) {
+    int score = CaptureScore(r);
 
     if(p == PlayerOne) {
         p1_score += score;

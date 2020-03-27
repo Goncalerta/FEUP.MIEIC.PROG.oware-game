@@ -16,13 +16,13 @@ struct Controller {
 };
 
 struct CmdController: public Controller {
-    CmdController(Player p): Controller(p) {}
+    CmdController(Player p);
     
     int ChoosePit(Gameboard &board);
     bool ask_endless_cycle();
 };
 struct BotController: public Controller {
-    BotController(Player p): Controller(p) {}
+    BotController(Player p);
 
     int ChoosePit(Gameboard &board);
     bool ask_endless_cycle();

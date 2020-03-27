@@ -22,6 +22,8 @@ struct Gameboard {
 
     Gameboard();
 
+    int PlayerScore(Player p);
+
     bool HasSeeds(Player p);
     bool HasLegalMove(Player p);
 
@@ -35,7 +37,7 @@ struct Gameboard {
 
     Range CaptureRange(Player p, int pit);
 
-    // make sure the player doesn't capture himself...
+    int CaptureScore(Range r);
     void Capture(Player p, Range r);
 
     bool IsGrandSlam(Player p, Range r);

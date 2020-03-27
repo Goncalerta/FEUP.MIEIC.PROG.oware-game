@@ -6,7 +6,6 @@
 #include <chrono>
 #include <thread>
 
-// TODO bot
 // TODO documentation and code cleanup
 
 const char title_screen[] = "   ___                         \n"
