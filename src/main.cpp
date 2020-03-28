@@ -6,7 +6,7 @@
 #include <chrono>
 #include <thread>
 
-// TODO documentation and code cleanup
+// TODO cleanup and documentation
 
 const char title_screen[] = "   ___                         \n"
                             "  / _ \\__      ____ _ _ __ ___ \n"
@@ -58,23 +58,26 @@ MenuOption prompt_player() {
     }
 }
 
-// TODO print extra info based on whether someone surrendered
 void draw_gameover_screen(Game &game) {
-    std::cout << title_screen << std::endl << std::endl;
+    std::cout << title_screen << std::endl;
     switch(game.win_state) {
         case PlayerOneWins:
             std::cout << "      Player 1 wins!" << std::endl;
+            if(game.surrendered) std::cout << "      Player 2 surrendered." << std::endl;
+            std::cout << std::endl;
             break;
         case PlayerTwoWins:
-            std::cout << "      Player 2 wins!" << std::endl;
+            std::cout << "      Player 2 wins!" << std::endl; 
+            if(game.surrendered) std::cout << "      Player 1 surrendered." << std::endl;
+            std::cout << std::endl;
             break;
         case Draw:
-            std::cout << "      Draw." << std::endl;
+            std::cout << "      Draw." << std::endl << std::endl;
             break;
     }
     std::cout << "Player 1 score: " << game.board.p1_score << "\t";
     std::cout << "Player 2 score: " << game.board.p2_score << std::endl;
-    // TODO ignore input while sleeping
+
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 }
 
@@ -90,26 +93,19 @@ int main() {
                 game = Game();
                 p1_controller = new CmdController(PlayerOne);
                 p2_controller = new CmdController(PlayerTwo);
-
-                while(game.win_state == OngoingGame) {
-                    game.PlayTurn(p1_controller, p2_controller);
-                }
-                clrscr();
-                draw_gameover_screen(game);
                 break;
             case PlayerVsAi:
                 game = Game();
                 p1_controller = new CmdController(PlayerOne);
                 p2_controller = new BotController(PlayerTwo);
-
-                while(game.win_state == OngoingGame) {
-                    game.PlayTurn(p1_controller, p2_controller);
-                }
-                clrscr();
-                draw_gameover_screen(game);
                 break;
             case ExitGame:
                 return 0;
         }
+        while(game.win_state == OngoingGame) {
+            game.PlayTurn(p1_controller, p2_controller);
+        }
+        clrscr();
+        draw_gameover_screen(game);
     }
 }

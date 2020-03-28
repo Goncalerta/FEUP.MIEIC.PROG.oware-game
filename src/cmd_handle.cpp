@@ -10,7 +10,7 @@
 
 void DrawGame(Gameboard &board) {
     // TODO prettify (color for each opponent, for avaliable and not avaliable pits, etc) (show how to surrender and claim endless cycle)
-    // TODO update score animation
+    // TODO [prettify] update score animation
     clrscr();
     std::cout << "               F   E   D   C   B   A" << std::endl;
     std::cout << "Player Two    ";

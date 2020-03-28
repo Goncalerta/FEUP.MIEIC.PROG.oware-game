@@ -1,7 +1,7 @@
 #include "game.h"
 #include <iostream>
 
-Game::Game(): current_player(PlayerOne), board(Gameboard()), win_state(OngoingGame) {}
+Game::Game(): current_player(PlayerOne), board(Gameboard()), win_state(OngoingGame), surrendered(false) {}
 
 void Game::UpdateWinState() {
     if(board.p1_score >= 25) win_state = PlayerOneWins;
@@ -14,16 +14,15 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
     Controller *opponent_controller = (current_player == PlayerOne? p2_controller : p1_controller);
 
     if(board.HasLegalMove(current_player)) {
-        DrawGame(board);
         int choice = player_controller->ChoosePit(board);
 
         if(choice == SURRENDER) {
+            surrendered = true;
             win_state = current_player == PlayerOne? PlayerTwoWins : PlayerOneWins;
         } else if(choice == CLAIM_ENDLESS_CYCLE) {
-            // TODO endless cycle only when both players have seeds in their zones
             bool opponent_claim = opponent_controller->ask_endless_cycle();
             if(opponent_claim) {
-                // TODO claim animation
+                // TODO [prettify] claim animation
                 board.Capture(current_player, PlayerBoard(current_player));
                 board.Capture(Opponent(current_player), PlayerBoard(Opponent(current_player)));
                 UpdateWinState();

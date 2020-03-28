@@ -10,9 +10,53 @@
 #include <cstdlib>  
 #include <ctime> 
 
+int CharToPit(char c) {
+    switch(c) {
+        case 'a': return 0;
+        case 'b': return 1;
+        case 'c': return 2;
+        case 'd': return 3;
+        case 'e': return 4;
+        case 'f': return 5;
+        case 'A': return 6;
+        case 'B': return 7;
+        case 'C': return 8;
+        case 'D': return 9;
+        case 'E': return 10;
+        case 'F': return 11;
+        default: return -1;
+    }
+}
+
+char PitToChar(int pit) {
+    switch(pit) {
+        case 0: return 'a';
+        case 1: return 'b';
+        case 2: return 'c';
+        case 3: return 'd';
+        case 4: return 'e';
+        case 5: return 'f';
+        case 6: return 'A';
+        case 7: return 'B';
+        case 8: return 'C';
+        case 9: return 'D';
+        case 10: return 'E';
+        case 11: return 'F';
+        default: return ' ';
+    }
+}
+
+char QuitChar(Player p) {
+    return p == PlayerOne? 'q' : 'Q';
+}
+
+char ClaimEndlessCycleChar(Player p) {
+    return p == PlayerOne? 'p' : 'P';
+}
+
 BotController::BotController(Player p): Controller(p) {}
 
-// TODO this should be possible to join with actual move
+// TODO [cleanup] this should be possible to join with actual move
 Gameboard SimulateMove(Gameboard &board, int pit) {
     Gameboard simulation = board;
     Player current_player = PitZone(pit);
@@ -65,6 +109,12 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
 }
 
 int BotController::ChoosePit(Gameboard &board) {
+    DrawGame(board);
+    bool playing_p1 = player == PlayerOne;
+    gotoxy(0, 8);
+    std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
+    std::cout << "Player " << (playing_p1? 1 : 2) << " is thinking... ";
+
     Range player_pits = PlayerBoard(player);
     Range opponent_pits = PlayerBoard(Opponent(player));
 
@@ -95,6 +145,8 @@ int BotController::ChoosePit(Gameboard &board) {
         }
     }
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(800));
+    std::cout << PitToChar(choice) << std::endl;
     return choice;
 }
 
@@ -102,34 +154,9 @@ bool BotController::ask_endless_cycle() {
     return true;
 }
 
-int CharToPit(char c) {
-    switch(c) {
-        case 'a': return 0;
-        case 'b': return 1;
-        case 'c': return 2;
-        case 'd': return 3;
-        case 'e': return 4;
-        case 'f': return 5;
-        case 'A': return 6;
-        case 'B': return 7;
-        case 'C': return 8;
-        case 'D': return 9;
-        case 'E': return 10;
-        case 'F': return 11;
-        default: return -1;
-    }
-}
-
-char QuitChar(Player p) {
-    return p == PlayerOne? 'q' : 'Q';
-}
-
-char ClaimEndlessCycleChar(Player p) {
-    return p == PlayerOne? 'p' : 'P';
-}
-
 CmdController::CmdController(Player p): Controller(p) {}
 
+// TODO(maybe) surrender confirmation
 int CmdController::ChoosePit(Gameboard &board) {
     char user_input;
     int chosen_pit;
@@ -138,8 +165,7 @@ int CmdController::ChoosePit(Gameboard &board) {
     PitSowableState sowable_state;
 
     do {
-        // Draw board and information about the state of the game
-        // before asking user for input
+        DrawGame(board);
         bool playing_p1 = player == PlayerOne;
 
         gotoxy(0, 8);
@@ -170,7 +196,18 @@ int CmdController::ChoosePit(Gameboard &board) {
         } 
         
         if(user_input == QuitChar(player)) return SURRENDER;
-        if(user_input == ClaimEndlessCycleChar(player)) return CLAIM_ENDLESS_CYCLE;
+        if(user_input == ClaimEndlessCycleChar(player)) {
+            // Wikipedia specifies that the game only ends due to both players agreeing
+            // that it has been reduced to an endless cycle if each player has seeds in 
+            // their pits.
+            if(board.HasSeeds(PlayerOne) && board.HasSeeds(PlayerTwo)) {
+                return CLAIM_ENDLESS_CYCLE;
+            } else {
+                warning_message = "You may only claim an endless cycle when both players have seeds in their pits.";
+                valid_input = false;
+                continue;
+            }
+        }
         if(user_input == QuitChar(Opponent(player))) {
             warning_message = "'";
             warning_message.push_back(user_input);

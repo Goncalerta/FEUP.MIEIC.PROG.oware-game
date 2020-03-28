@@ -50,7 +50,9 @@
         "iomanip": "cpp",
         "string": "cpp",
         "xlocmon": "cpp",
-        "xloctime": "cpp"
+        "xloctime": "cpp",
+        "algorithm": "cpp",
+        "random": "cpp"
     },
     "terminal.integrated.shell.windows": "cmd.exe"
 }

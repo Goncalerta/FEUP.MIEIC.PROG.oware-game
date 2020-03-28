@@ -18,6 +18,7 @@ struct Game {
     Gameboard board;
     Player current_player;
     WinState win_state;
+    bool surrendered;
 
     Game();
 
