@@ -1,5 +1,5 @@
 #include "controller.h"
-#include "cmd_utils.h"
+#include "cmd_handle.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -109,7 +109,7 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
 }
 
 int BotController::ChoosePit(Gameboard &board) {
-    DrawGame(board);
+    DrawGameboard(board);
     bool playing_p1 = player == PlayerOne;
     gotoxy(0, 8);
     std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
@@ -165,7 +165,7 @@ int CmdController::ChoosePit(Gameboard &board) {
     PitSowableState sowable_state;
 
     do {
-        DrawGame(board);
+        DrawGameboard(board);
         bool playing_p1 = player == PlayerOne;
 
         gotoxy(0, 8);

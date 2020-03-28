@@ -1,5 +1,5 @@
 #include "game.h"
-#include <iostream>
+#include "cmd_handle.h"
 
 Game::Game(): current_player(PlayerOne), board(Gameboard()), win_state(OngoingGame), surrendered(false) {}
 

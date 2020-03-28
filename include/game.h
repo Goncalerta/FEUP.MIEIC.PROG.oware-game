@@ -11,7 +11,6 @@ enum WinState {
 
 #include "gameboard.h"
 #include "player.h"
-#include "cmd_handle.h"
 #include "controller.h"
 
 struct Game {
