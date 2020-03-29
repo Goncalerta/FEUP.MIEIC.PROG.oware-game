@@ -10,14 +10,6 @@
 #include <cstdlib>  
 #include <ctime> 
 
-char QuitChar(Player p) {
-    return p == PlayerOne? 'q' : 'Q';
-}
-
-char ClaimEndlessCycleChar(Player p) {
-    return p == PlayerOne? 'p' : 'P';
-}
-
 BotController::BotController(Player p): Controller(p) {}
 
 // TODO [cleanup] this should be possible to join with actual move
@@ -74,7 +66,7 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
 
 int BotController::ChoosePit(Gameboard &board) {
     clrscr();
-    DrawGameboard(board);
+    DrawGameboard(board, true, false);
 
     gotoxy(0, GAME_PROMPT_LINE);
     DrawPlayerLabel(player);
@@ -137,6 +129,9 @@ bool PromptYesNo(Player p) {
         std::cin >> answer;
 
         if(std::cin.fail()) {
+            // Closing stdin in prompt is interpreted as a 'no'
+            if(std::cin.eof()) return false;
+
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Invalid input. Input (" << valid_inputs << "): ";
@@ -171,7 +166,7 @@ int CmdController::ChoosePit(Gameboard &board) {
 
     do {
         clrscr();
-        DrawGameboard(board);
+        DrawGameboard(board, playing_p1, !playing_p1);
         
         gotoxy(0, GAME_PROMPT_LINE);
         DrawPlayerLabel(player);

@@ -30,6 +30,9 @@ const int GAME_PROMPT_LINE = 8;
 int CharToPit(char c);
 char PitToChar(int pit);
 
+char QuitChar(Player p);
+char ClaimEndlessCycleChar(Player p);
+
 void DrawPlayerLabel(Player p);
 
 void DrawMenu();
@@ -44,7 +47,7 @@ MenuOption MenuPrompt();
 
 void DrawGameoverScreen(Game &game);
 
-void DrawGameboard(Gameboard &board);
+void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls);
 void SetPit(int pit, int value);
 void HighlightCapture(Range capture, Player p, Gameboard &board);
 

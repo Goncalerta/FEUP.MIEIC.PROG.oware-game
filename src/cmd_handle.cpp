@@ -44,6 +44,14 @@ char PitToChar(int pit) {
     }
 }
 
+char QuitChar(Player p) {
+    return p == PlayerOne? 'q' : 'Q';
+}
+
+char ClaimEndlessCycleChar(Player p) {
+    return p == PlayerOne? 'p' : 'P';
+}
+
 void DrawTitleScreen() {
     setcolor(TITLE_SCREEN_COLOR);
     std::cout << TITLE_SCREEN << std::endl;
@@ -162,10 +170,10 @@ void DrawGameoverScreen(Game &game) {
     std::this_thread::sleep_for(std::chrono::milliseconds(GAMEOVER_SCREEN_MILLISECONDS));
 }
 
-void DrawGameboard(Gameboard &board) {
-    // TODO prettify  (show how to surrender and claim endless cycle)
+void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     // TODO [prettify] update score animation
 
+    // 'A B C D E F' line
     setcolor(PLAYER_TWO_COLOR);
     std::cout << "               ";
     for(int i = 11; i >= 6; i--) {
@@ -177,7 +185,17 @@ void DrawGameboard(Gameboard &board) {
 
         std::cout << PitToChar(i) << "   ";
     }
+
+    if(p2_controls) {
+        setcolor(TEXT_COLOR);
+        std::cout << "                 " << "Surrender: ";
+        setcolor(PLAYER_TWO_COLOR);
+        std::cout << "'" << QuitChar(PlayerTwo) << "'";
+    }
+
     std::cout << std::endl;
+    
+    // p2 pits line
     DrawPlayerLabel(PlayerTwo);
     std::cout << "      ";
     for(int i = 11; i >= 6; i--) {
@@ -193,8 +211,19 @@ void DrawGameboard(Gameboard &board) {
     std::cout << "   Score: ";
     setcolor(PLAYER_TWO_COLOR);
     std::cout << std::setw(2) << board.p2_score;
+
+    if(p2_controls) {
+        setcolor(TEXT_COLOR);
+        std::cout << "      " << "Claim endless cycle: ";
+        setcolor(PLAYER_TWO_COLOR);
+        std::cout << "'" << ClaimEndlessCycleChar(PlayerTwo) <<"'";
+    }
+    
+    // separation line
     setcolor(PLAYER_NEUTRAL_COLOR);
     std::cout << std::endl << "             ---------------------------------------" << std::endl;
+    
+    // p1 pits line
     DrawPlayerLabel(PlayerOne);
     std::cout << "      ";
     for(int i = 0; i <= 5; i++) {
@@ -209,8 +238,17 @@ void DrawGameboard(Gameboard &board) {
     setcolor(TEXT_COLOR);
     std::cout << "   Score: ";
     setcolor(PLAYER_ONE_COLOR);
-    std::cout << std::setw(2) << board.p1_score << std::endl;
-    std::cout << "               ";
+    std::cout << std::setw(2) << board.p1_score;
+    
+    if(p1_controls) {
+        setcolor(TEXT_COLOR);
+        std::cout << "      " << "Surrender: ";
+        setcolor(PLAYER_ONE_COLOR);
+        std::cout << "'" << QuitChar(PlayerOne) << "'";
+    }
+    
+    // 'a b c d e f' line
+    std::cout << std::endl << "               ";
     for(int i = 0; i <= 5; i++) {
         if(board.Sowable(PlayerOne, i) == ValidPit) {
             setcolor(PLAYER_ONE_SOWABLE_COLOR);
@@ -220,6 +258,14 @@ void DrawGameboard(Gameboard &board) {
 
         std::cout << PitToChar(i) << "   ";
     }
+    
+    if(p1_controls) {
+        setcolor(TEXT_COLOR);
+        std::cout << "                 " << "Claim endless cycle: ";
+        setcolor(PLAYER_ONE_COLOR);
+        std::cout << "'" << ClaimEndlessCycleChar(PlayerOne) <<"'";
+    }
+    
     std::cout << std::endl;
 }
 

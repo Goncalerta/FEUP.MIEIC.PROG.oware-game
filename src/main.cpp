@@ -2,7 +2,7 @@
 #include "cmd_handle.h"
 #include "controller.h"
 
-// TODO cleanup and documentation
+// TODO [cleanup] documentation
 int main() {
     Game game;
     Controller *p1_controller, *p2_controller;

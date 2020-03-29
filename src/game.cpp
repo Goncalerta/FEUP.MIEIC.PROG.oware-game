@@ -22,6 +22,7 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
         } else if(choice == CLAIM_ENDLESS_CYCLE) {
             bool opponent_claim = opponent_controller->ask_endless_cycle();
             if(opponent_claim) {
+                // <CAPTURE>
                 HighlightCapture(PlayerBoard(current_player), current_player, board);
                 board.Capture(current_player, PlayerBoard(current_player));
                 HighlightCapture(PlayerBoard(Opponent(current_player)), Opponent(current_player), board);
@@ -36,6 +37,7 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
                 Range capture = board.CaptureRange(current_player, last_sowed);
                 // "Grand Slams" cancel capture in abapa version
                 if(!board.IsGrandSlam(current_player, capture)) {
+                    // <CAPTURE>
                     HighlightCapture(capture, current_player, board);
                     board.Capture(current_player, capture);
                     UpdateWinState();
@@ -46,6 +48,7 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
         }
     } else {
         Range capture = PlayerBoard(current_player);
+        // <CAPTURE>
         HighlightCapture(capture, current_player, board);
         board.Capture(current_player, capture);
         UpdateWinState();

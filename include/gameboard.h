@@ -32,7 +32,7 @@ struct Gameboard {
     int Sow(int pit, SetPitAnimator set_pit);
 
     bool IsCapturable(Player p, int pit);
-    bool IsCapturable(Range playerboard, int pit);
+    bool IsCapturable(Range capturable_range, int pit);
 
     Range CaptureRange(Player p, int pit);
 

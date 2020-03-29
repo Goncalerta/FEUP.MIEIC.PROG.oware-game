@@ -26,6 +26,7 @@ bool Gameboard::HasSeeds(Player p) {
 
 
 bool Gameboard::HasLegalMove(Player p) {
+    // TODO [rename] PlayerBoard -> PlayerZone
     Range player_board = PlayerBoard(p);
     bool opponent_has_seeds = HasSeeds(Opponent(p));
     
@@ -38,6 +39,7 @@ bool Gameboard::HasLegalMove(Player p) {
 
 
 PitSowableState Gameboard::Sowable(Player p, int pit) {
+    // TODO [rename] PitZone -> PitOwner
     bool in_player_zone = PitZone(pit) == p;
 
     // Must be a nonempty pit in the current player zone
@@ -78,21 +80,21 @@ int Gameboard::Sow(int pit, SetPitAnimator set_pit) {
 }
 
 bool Gameboard::IsCapturable(Player p, int pit) {
-    return IsCapturable(PlayerBoard(p), pit);
+    // Under normal conditions, a player can only capture 
+    // their opponent's zone of the board. 
+    return IsCapturable(PlayerBoard(Opponent(p)), pit);
 }
 
-bool Gameboard::IsCapturable(Range player_board, int pit) {
-    // A player can't capture their own board
-    if(player_board.Contains(pit)) return false;
-    return pits[pit] == 2 || pits[pit] == 3;
+bool Gameboard::IsCapturable(Range capturable_range, int pit) {
+    return capturable_range.Contains(pit) && (pits[pit] == 2 || pits[pit] == 3);
 }
 
 Range Gameboard::CaptureRange(Player p, int pit) {
     int end = pit;
     int begin = end;
-    Range player_board = PlayerBoard(p);
+    Range capturable_range = PlayerBoard(Opponent(p));
 
-    while(IsCapturable(player_board, begin-1)) {
+    while(IsCapturable(capturable_range, begin-1)) {
         begin--;
     }
 
