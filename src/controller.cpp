@@ -156,6 +156,41 @@ bool BotController::ask_endless_cycle() {
 
 CmdController::CmdController(Player p): Controller(p) {}
 
+bool PromptYesNo(Player p) {
+    char answer;
+    char agree_char = p == PlayerOne? 'y' : 'Y';
+    char disagree_char = p == PlayerOne? 'n' : 'N';
+    char opponent_agree_char = p == PlayerOne? 'Y' : 'y';
+    char opponent_disagree_char = p == PlayerOne? 'N' : 'n';
+
+    while(true) {
+        std::cin >> answer;
+
+        if(std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+
+        } else if(answer == opponent_agree_char) {
+            std::cout << "'" << opponent_agree_char << "' is Player " << (p == PlayerOne? "2" : "1")
+                << "'s agree command. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+        
+        } else if(answer == opponent_disagree_char) {
+            std::cout << "'" << opponent_agree_char << "' is Player " << (p == PlayerOne? "2" : "1")
+                << "'s disagree command. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+        
+        } else if(answer == agree_char) {
+            return true;
+        
+        } else if(answer == disagree_char) {
+            return false;
+        
+        } else {
+            std::cout << "Invalid input. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+        }
+    }
+}
+
 int CmdController::ChoosePit(Gameboard &board) {
     char user_input;
     int chosen_pit;
@@ -195,32 +230,9 @@ int CmdController::ChoosePit(Gameboard &board) {
         } 
         
         if(user_input == QuitChar(player)) {
-            char answer;
-            char agree_char = player == PlayerOne? 's' : 'S';
-            char opponent_agree_char = player == PlayerOne? 'S' : 's';
+            std::cout << "Are you sure? (" << (player == PlayerOne? "y/n" : "Y/N") << "): ";
 
-            std::cout << "Are you sure? Input '" << agree_char << "' to agree, or any other letter otherwise: ";
-
-            // The prompt will only be repeated in case the player uses opponent's agree character
-            // that is because they are very similiar, and so could be a source of confusion.
-            while(true) {
-                std::cin >> answer;
-
-                if(std::cin.fail()) {
-                    std::cin.clear();
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                    return false;
-                } 
-
-                if(answer == opponent_agree_char) {
-                    std::cout << "'" << opponent_agree_char << "' is Player " << (player == PlayerOne? "2" : "1")
-                        << "'s agree command. If you intend to agree, please input '" << agree_char 
-                        << "'. Otherwise input any other letter: ";
-                } else {
-                    break;
-                }
-            } 
-            if(answer == agree_char) {
+            if(PromptYesNo(player)) {
                 return SURRENDER;
             } else {
                 valid_input = false;
@@ -293,30 +305,8 @@ int CmdController::ChoosePit(Gameboard &board) {
 }
 
 bool CmdController::ask_endless_cycle() {
-    char answer;
-    char agree_char = player == PlayerOne? 's' : 'S';
-    char opponent_agree_char = player == PlayerOne? 'S' : 's';
-
     std::cout << "Player " << (player == PlayerOne? "2" : "1") << " claims that the game has been reduced to an endless cycle." << std::endl;
-    std::cout << "Player " << (player == PlayerOne? "1" : "2") << ", input '" << agree_char << "' to agree, or any other letter otherwise: ";
+    std::cout << "Player " << (player == PlayerOne? "1" : "2") << ", do you agree? (" << (player == PlayerOne? "y/n" : "Y/N") << "): ";
 
-    // The prompt will only be repeated in case the player uses opponent's agree character
-    // that is because they are very similiar, and so could be a source of confusion.
-    while(true) {
-        std::cin >> answer;
-
-        if(std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            return false;
-        } 
-
-        if(answer == opponent_agree_char) {
-            std::cout << "'" << opponent_agree_char << "' is Player " << (player == PlayerOne? "2" : "1")
-                << "'s agree command. If you intend to agree, please input '" << agree_char 
-                << "'. Otherwise input any other letter: ";
-        } else {
-            return answer == agree_char;
-        }
-    } 
+    return PromptYesNo(player);
 }
