@@ -156,7 +156,6 @@ bool BotController::ask_endless_cycle() {
 
 CmdController::CmdController(Player p): Controller(p) {}
 
-// TODO(maybe) surrender confirmation
 int CmdController::ChoosePit(Gameboard &board) {
     char user_input;
     int chosen_pit;
@@ -195,7 +194,39 @@ int CmdController::ChoosePit(Gameboard &board) {
             continue;
         } 
         
-        if(user_input == QuitChar(player)) return SURRENDER;
+        if(user_input == QuitChar(player)) {
+            char answer;
+            char agree_char = player == PlayerOne? 's' : 'S';
+            char opponent_agree_char = player == PlayerOne? 'S' : 's';
+
+            std::cout << "Are you sure? Input '" << agree_char << "' to agree, or any other letter otherwise: ";
+
+            // The prompt will only be repeated in case the player uses opponent's agree character
+            // that is because they are very similiar, and so could be a source of confusion.
+            while(true) {
+                std::cin >> answer;
+
+                if(std::cin.fail()) {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    return false;
+                } 
+
+                if(answer == opponent_agree_char) {
+                    std::cout << "'" << opponent_agree_char << "' is Player " << (player == PlayerOne? "2" : "1")
+                        << "'s agree command. If you intend to agree, please input '" << agree_char 
+                        << "'. Otherwise input any other letter: ";
+                } else {
+                    break;
+                }
+            } 
+            if(answer == agree_char) {
+                return SURRENDER;
+            } else {
+                valid_input = false;
+                continue;
+            }
+        } 
         if(user_input == ClaimEndlessCycleChar(player)) {
             // Wikipedia specifies that the game only ends due to both players agreeing
             // that it has been reduced to an endless cycle if each player has seeds in 
@@ -263,8 +294,8 @@ int CmdController::ChoosePit(Gameboard &board) {
 
 bool CmdController::ask_endless_cycle() {
     char answer;
-    char agree_char = player == PlayerOne? 'p' : 'P';
-    char opponent_agree_char = player == PlayerOne? 'P' : 'p';
+    char agree_char = player == PlayerOne? 's' : 'S';
+    char opponent_agree_char = player == PlayerOne? 'S' : 's';
 
     std::cout << "Player " << (player == PlayerOne? "2" : "1") << " claims that the game has been reduced to an endless cycle." << std::endl;
     std::cout << "Player " << (player == PlayerOne? "1" : "2") << ", input '" << agree_char << "' to agree, or any other letter otherwise: ";
