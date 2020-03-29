@@ -10,42 +10,6 @@
 #include <cstdlib>  
 #include <ctime> 
 
-int CharToPit(char c) {
-    switch(c) {
-        case 'a': return 0;
-        case 'b': return 1;
-        case 'c': return 2;
-        case 'd': return 3;
-        case 'e': return 4;
-        case 'f': return 5;
-        case 'A': return 6;
-        case 'B': return 7;
-        case 'C': return 8;
-        case 'D': return 9;
-        case 'E': return 10;
-        case 'F': return 11;
-        default: return -1;
-    }
-}
-
-char PitToChar(int pit) {
-    switch(pit) {
-        case 0: return 'a';
-        case 1: return 'b';
-        case 2: return 'c';
-        case 3: return 'd';
-        case 4: return 'e';
-        case 5: return 'f';
-        case 6: return 'A';
-        case 7: return 'B';
-        case 8: return 'C';
-        case 9: return 'D';
-        case 10: return 'E';
-        case 11: return 'F';
-        default: return ' ';
-    }
-}
-
 char QuitChar(Player p) {
     return p == PlayerOne? 'q' : 'Q';
 }
@@ -109,11 +73,16 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
 }
 
 int BotController::ChoosePit(Gameboard &board) {
+    clrscr();
     DrawGameboard(board);
-    bool playing_p1 = player == PlayerOne;
-    gotoxy(0, 8);
-    std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
-    std::cout << "Player " << (playing_p1? 1 : 2) << " is thinking... ";
+
+    gotoxy(0, GAME_PROMPT_LINE);
+    DrawPlayerLabel(player);
+    setcolor(TEXT_COLOR);
+    std::cout << " is playing this turn." << std::endl;
+    DrawPlayerLabel(player);
+    setcolor(TEXT_COLOR);
+    std::cout << " is thinking... ";
 
     Range player_pits = PlayerBoard(player);
     Range opponent_pits = PlayerBoard(Opponent(player));
@@ -162,6 +131,7 @@ bool PromptYesNo(Player p) {
     char disagree_char = p == PlayerOne? 'n' : 'N';
     char opponent_agree_char = p == PlayerOne? 'Y' : 'y';
     char opponent_disagree_char = p == PlayerOne? 'N' : 'n';
+    const char *valid_inputs = p == PlayerOne? "y/n" : "Y/N";
 
     while(true) {
         std::cin >> answer;
@@ -169,15 +139,15 @@ bool PromptYesNo(Player p) {
         if(std::cin.fail()) {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid input. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+            std::cout << "Invalid input. Input (" << valid_inputs << "): ";
 
         } else if(answer == opponent_agree_char) {
             std::cout << "'" << opponent_agree_char << "' is Player " << (p == PlayerOne? "2" : "1")
-                << "'s agree command. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+                << "'s agree command. Input (" << valid_inputs << "): ";
         
         } else if(answer == opponent_disagree_char) {
-            std::cout << "'" << opponent_agree_char << "' is Player " << (p == PlayerOne? "2" : "1")
-                << "'s disagree command. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+            std::cout << "'" << opponent_disagree_char << "' is Player " << (p == PlayerOne? "2" : "1")
+                << "'s disagree command. Input (" << valid_inputs << "): ";
         
         } else if(answer == agree_char) {
             return true;
@@ -186,7 +156,7 @@ bool PromptYesNo(Player p) {
             return false;
         
         } else {
-            std::cout << "Invalid input. Input (" << (p == PlayerOne? "y/n" : "Y/N") << "): ";
+            std::cout << "Invalid input. Input (" << valid_inputs << "): ";
         }
     }
 }
@@ -197,13 +167,16 @@ int CmdController::ChoosePit(Gameboard &board) {
     bool valid_input;
     std::string warning_message = "";
     PitSowableState sowable_state;
+    bool playing_p1 = player == PlayerOne;
 
     do {
+        clrscr();
         DrawGameboard(board);
-        bool playing_p1 = player == PlayerOne;
-
-        gotoxy(0, 8);
-        std::cout << "Player " << (playing_p1? 1 : 2) << " is playing this turn." << std::endl;
+        
+        gotoxy(0, GAME_PROMPT_LINE);
+        DrawPlayerLabel(player);
+        setcolor(TEXT_COLOR);
+        std::cout << " is playing this turn." << std::endl;       
         if(warning_message != "") std::cout << warning_message << std::endl;
         std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
         std::cin >> user_input;
@@ -254,8 +227,8 @@ int CmdController::ChoosePit(Gameboard &board) {
         if(user_input == QuitChar(Opponent(player))) {
             warning_message = "'";
             warning_message.push_back(user_input);
-            warning_message.append("' is player ");
-            warning_message.push_back(playing_p1? '1' : '2');
+            warning_message.append("' is Player ");
+            warning_message.push_back(playing_p1? '2' : '1');
             warning_message.append("'s surrender command.");
             valid_input = false;
             continue;
@@ -263,8 +236,8 @@ int CmdController::ChoosePit(Gameboard &board) {
         if(user_input == ClaimEndlessCycleChar(Opponent(player))) {
             warning_message = "'";
             warning_message.push_back(user_input);
-            warning_message.append("' is player ");
-            warning_message.push_back(playing_p1? '1' : '2');
+            warning_message.append("' is Player ");
+            warning_message.push_back(playing_p1? '2' : '1');
             warning_message.append("'s claim endless cycle command.");
             valid_input = false;
             continue;
@@ -284,7 +257,7 @@ int CmdController::ChoosePit(Gameboard &board) {
             case PitInOpponentZone:
                 warning_message = "Pit '"; 
                 warning_message.push_back(user_input);
-                warning_message.append("' does not belong to player ");
+                warning_message.append("' does not belong to Player ");
                 warning_message.push_back(playing_p1? '1' : '2');
                 warning_message.append(".");
                 break;
@@ -305,8 +278,12 @@ int CmdController::ChoosePit(Gameboard &board) {
 }
 
 bool CmdController::ask_endless_cycle() {
-    std::cout << "Player " << (player == PlayerOne? "2" : "1") << " claims that the game has been reduced to an endless cycle." << std::endl;
-    std::cout << "Player " << (player == PlayerOne? "1" : "2") << ", do you agree? (" << (player == PlayerOne? "y/n" : "Y/N") << "): ";
+    DrawPlayerLabel(Opponent(player));
+    setcolor(TEXT_COLOR);
+    std::cout << " claims that the game has been reduced to an endless cycle." << std::endl;
+    DrawPlayerLabel(player);
+    setcolor(TEXT_COLOR);
+    std::cout << ", do you agree? (" << (player == PlayerOne? "y/n" : "Y/N") << "): ";
 
     return PromptYesNo(player);
 }

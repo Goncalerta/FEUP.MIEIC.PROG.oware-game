@@ -8,6 +8,7 @@ int main() {
     Controller *p1_controller, *p2_controller;
 
     while(true) {
+        clrscr();
         DrawMenu();
 
         switch(MenuPrompt()) {
@@ -31,6 +32,7 @@ int main() {
             game.PlayTurn(p1_controller, p2_controller);
         }
 
+        clrscr();
         DrawGameoverScreen(game);
     }
 }
