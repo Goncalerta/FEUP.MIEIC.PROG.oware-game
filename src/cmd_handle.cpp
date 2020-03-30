@@ -64,7 +64,8 @@ void DrawMenuOption(int number, std::string option) {
     std::cout << option << std::endl;
 }
 
-void DrawMenu() {
+void DisplayMenu() {
+    clrscr();
     DrawTitleScreen();
     DrawMenuOption(1, "Player Vs. Player");
     DrawMenuOption(2, "Player Vs. AI");
@@ -116,7 +117,8 @@ void DrawPlayerLabel(Player p) {
     }
 }
 
-void DrawGameoverScreen(Game &game) {
+void DisplayGameoverScreen(Game &game) {
+    clrscr();
     DrawTitleScreen();
 
     switch(game.win_state) {
@@ -171,8 +173,6 @@ void DrawGameoverScreen(Game &game) {
 }
 
 void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
-    // TODO [prettify] update score animation
-
     // 'A B C D E F' line
     setcolor(PLAYER_TWO_COLOR);
     std::cout << "               ";
@@ -269,6 +269,15 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     std::cout << std::endl;
 }
 
+void DrawOutOfMoves(Gameboard &board, Player p) {
+    clrscr();
+    DrawGameboard(board, false, false);
+    gotoxy(0, GAME_PROMPT_LINE);
+    DrawPlayerLabel(p);
+    setcolor(TEXT_COLOR);
+    std::cout << " is out of legal moves.";
+}
+
 // TODO [cleanup] global variables, name
 void set_cursor_on_pit(int pit) {
     int x, y;
@@ -288,6 +297,23 @@ void SetPit(int pit, int value) {
     setcolor(PLAYER_NEUTRAL_COLOR);
     std::cout << std::setw(2) << value;
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+}
+
+void SetScore(Player p, int value) {
+    int x = PLAYER_SCORE_COLUMN;
+    int y = (p == PlayerOne? PLAYER_ONE_PITS_LINE : PLAYER_TWO_PITS_LINE);
+    gotoxy(x, y);
+    setcolor(SET_SCORE_COLOR);
+    std::cout << std::setw(2) << value;
+}
+
+void SetScoreAnimation(Player p, int old_value, int new_value) {
+    for(int i = old_value; i <= new_value; i++) {
+        SetScore(p, i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 void HighlightCapture(Range capture, Player p, Gameboard &board) {

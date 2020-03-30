@@ -112,12 +112,14 @@ int Gameboard::CaptureScore(Range r) {
     return score;
 }
 
-void Gameboard::Capture(Player p, Range r) {
+void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score) {
     int score = CaptureScore(r);
 
     if(p == PlayerOne) {
+        if(set_score) set_score(p, p1_score, p1_score + score);
         p1_score += score;
     } else {
+        if(set_score) set_score(p, p2_score, p2_score + score);
         p2_score += score;
     }
 }

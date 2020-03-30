@@ -2,14 +2,12 @@
 #include "cmd_handle.h"
 #include "controller.h"
 
-// TODO [cleanup] documentation
 int main() {
     Game game;
     Controller *p1_controller, *p2_controller;
 
     while(true) {
-        clrscr();
-        DrawMenu();
+        DisplayMenu();
 
         switch(MenuPrompt()) {
             case PlayerVsPlayer:
@@ -32,7 +30,6 @@ int main() {
             game.PlayTurn(p1_controller, p2_controller);
         }
 
-        clrscr();
-        DrawGameoverScreen(game);
+        DisplayGameoverScreen(game);
     }
 }

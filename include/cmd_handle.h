@@ -22,10 +22,14 @@ const int PLAYER_ONE_SOWABLE_COLOR = LIGHTBLUE;
 const int PLAYER_ONE_UNSOWABLE_COLOR = BLUE;
 const int PLAYER_TWO_SOWABLE_COLOR = LIGHTRED;
 const int PLAYER_TWO_UNSOWABLE_COLOR = RED;
+const int SET_SCORE_COLOR = LIGHTGREEN;
 
 const int GAMEOVER_SCREEN_MILLISECONDS = 6000;
 
+const int PLAYER_TWO_PITS_LINE = 1;
+const int PLAYER_ONE_PITS_LINE = 3;
 const int GAME_PROMPT_LINE = 8;
+const int PLAYER_SCORE_COLUMN = 48;
 
 int CharToPit(char c);
 char PitToChar(int pit);
@@ -35,7 +39,7 @@ char ClaimEndlessCycleChar(Player p);
 
 void DrawPlayerLabel(Player p);
 
-void DrawMenu();
+void DisplayMenu();
 
 enum MenuOption {
     PlayerVsPlayer = 1,
@@ -45,10 +49,12 @@ enum MenuOption {
 
 MenuOption MenuPrompt();
 
-void DrawGameoverScreen(Game &game);
+void DisplayGameoverScreen(Game &game);
 
 void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls);
+void DrawOutOfMoves(Gameboard &board, Player p);
 void SetPit(int pit, int value);
+void SetScoreAnimation(Player p, int old_value, int new_value);
 void HighlightCapture(Range capture, Player p, Gameboard &board);
 
 #endif

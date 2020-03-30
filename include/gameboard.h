@@ -1,18 +1,18 @@
 #ifndef GAMEBOARD_H
 #define GAMEBOARD_H
 
-typedef void (*SetPitAnimator)(int, int);
+#include "player.h"
+#include "range.h"
 
-struct Gameboard;
+typedef void (*SetPitAnimator)(int, int);
+typedef void (*SetScoreAnimator)(Player, int, int);
+
 enum PitSowableState {
     ValidPit,
     PitInOpponentZone,
     EmptyPit,
     OpponentOutOfSeeds,
 };
-
-#include "player.h"
-#include "range.h"
 
 struct Gameboard {
     int p1_score;
@@ -37,7 +37,7 @@ struct Gameboard {
     Range CaptureRange(Player p, int pit);
 
     int CaptureScore(Range r);
-    void Capture(Player p, Range r);
+    void Capture(Player p, Range r, SetScoreAnimator set_score);
 
     bool IsGrandSlam(Player p, Range r);
 };

@@ -22,11 +22,10 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
         } else if(choice == CLAIM_ENDLESS_CYCLE) {
             bool opponent_claim = opponent_controller->ask_endless_cycle();
             if(opponent_claim) {
-                // <CAPTURE>
                 HighlightCapture(PlayerBoard(current_player), current_player, board);
-                board.Capture(current_player, PlayerBoard(current_player));
+                board.Capture(current_player, PlayerBoard(current_player), SetScoreAnimation);
                 HighlightCapture(PlayerBoard(Opponent(current_player)), Opponent(current_player), board);
-                board.Capture(Opponent(current_player), PlayerBoard(Opponent(current_player)));
+                board.Capture(Opponent(current_player), PlayerBoard(Opponent(current_player)), SetScoreAnimation);
                 UpdateWinState();
             }
 
@@ -37,9 +36,8 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
                 Range capture = board.CaptureRange(current_player, last_sowed);
                 // "Grand Slams" cancel capture in abapa version
                 if(!board.IsGrandSlam(current_player, capture)) {
-                    // <CAPTURE>
                     HighlightCapture(capture, current_player, board);
-                    board.Capture(current_player, capture);
+                    board.Capture(current_player, capture, SetScoreAnimation);
                     UpdateWinState();
                 }
             }
@@ -47,10 +45,10 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
             current_player = Opponent(current_player);
         }
     } else {
+        DrawOutOfMoves(board, current_player);
         Range capture = PlayerBoard(current_player);
-        // <CAPTURE>
         HighlightCapture(capture, current_player, board);
-        board.Capture(current_player, capture);
+        board.Capture(current_player, capture, SetScoreAnimation);
         UpdateWinState();
     }
 }
