@@ -1,4 +1,5 @@
 #include "game.h"
+#include "range.h"
 #include "cmd_handle.h"
 
 Game::Game(): current_player(PlayerOne), board(Gameboard()), win_state(OngoingGame), surrendered(false) {}
@@ -10,45 +11,75 @@ void Game::UpdateWinState() {
 }
 
 void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
-    Controller *player_controller = (current_player == PlayerOne? p1_controller : p2_controller);
-    Controller *opponent_controller = (current_player == PlayerOne? p2_controller : p1_controller);
+    Controller *player_controller, *opponent_controller;
+    
+    if(current_player == PlayerOne) {
+        player_controller = p1_controller;
+        opponent_controller = p2_controller;
+    } else {
+        player_controller = p2_controller;
+        opponent_controller = p1_controller;
+    }
 
     if(board.HasLegalMove(current_player)) {
         int choice = player_controller->ChoosePit(board);
 
         if(choice == SURRENDER) {
-            surrendered = true;
-            win_state = current_player == PlayerOne? PlayerTwoWins : PlayerOneWins;
+            Surrender(current_player);
+
         } else if(choice == CLAIM_ENDLESS_CYCLE) {
             bool opponent_claim = opponent_controller->ask_endless_cycle();
-            if(opponent_claim) {
-                HighlightCapture(PlayerBoard(current_player), current_player, board);
-                board.Capture(current_player, PlayerBoard(current_player), SetScoreAnimation);
-                HighlightCapture(PlayerBoard(Opponent(current_player)), Opponent(current_player), board);
-                board.Capture(Opponent(current_player), PlayerBoard(Opponent(current_player)), SetScoreAnimation);
-                UpdateWinState();
-            }
-
+            if(opponent_claim) EndlessCycle();
+        
         } else { 
-            int last_sowed = board.Sow(choice, SetPit);
-
-            if(board.IsCapturable(current_player, last_sowed)) {
-                Range capture = board.CaptureRange(current_player, last_sowed);
-                // "Grand Slams" cancel capture in abapa version
-                if(!board.IsGrandSlam(current_player, capture)) {
-                    HighlightCapture(capture, current_player, board);
-                    board.Capture(current_player, capture, SetScoreAnimation);
-                    UpdateWinState();
-                }
-            }
-
+            PlayMove(choice);
             current_player = Opponent(current_player);
         }
     } else {
-        DrawOutOfMoves(board, current_player);
-        Range capture = PlayerBoard(current_player);
-        HighlightCapture(capture, current_player, board);
-        board.Capture(current_player, capture, SetScoreAnimation);
-        UpdateWinState();
+        OutOfMoves();
     }
+}
+
+void Game::PlayMove(int choice) {
+    int last_sowed = board.Sow(choice, SetPit);
+
+    if(board.IsCapturable(current_player, last_sowed)) {
+        Range capture = board.CaptureRange(current_player, last_sowed);
+        
+        // "Grand Slams" cancel capture in abapa version
+        if(!board.IsGrandSlam(current_player, capture)) {
+            HighlightCapture(capture, current_player, board);
+            board.Capture(current_player, capture, SetScoreAnimation);
+            UpdateWinState();
+        }
+    }
+}
+
+void Game::OutOfMoves() {
+    ShowOutOfMovesGameboard(board, current_player);
+    
+    Range capture = PlayerZone(current_player);
+    HighlightCapture(capture, current_player, board);
+    board.Capture(current_player, capture, SetScoreAnimation);
+    
+    UpdateWinState();
+}
+
+void Game::EndlessCycle() {
+    Player opponent = Opponent(current_player);
+    Range player_zone = PlayerZone(current_player);
+    Range opponent_zone = PlayerZone(opponent);
+
+    // TODO HighlightCapture may become Gameboard::capture animator
+    HighlightCapture(player_zone, current_player, board);
+    board.Capture(current_player, player_zone, SetScoreAnimation);
+    HighlightCapture(opponent_zone, opponent, board);
+    board.Capture(opponent, opponent_zone, SetScoreAnimation);
+    
+    UpdateWinState();
+}
+
+void Game::Surrender(Player p) {
+    surrendered = true;
+    win_state = (p == PlayerOne? PlayerTwoWins : PlayerOneWins);
 }

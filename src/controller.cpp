@@ -15,7 +15,7 @@ BotController::BotController(Player p): Controller(p) {}
 // TODO [cleanup] this should be possible to join with actual move
 Gameboard SimulateMove(Gameboard &board, int pit) {
     Gameboard simulation = board;
-    Player current_player = PitZone(pit);
+    Player current_player = PitOwner(pit);
     
     int last_sowed = simulation.Sow(pit, NULL);
 
@@ -33,14 +33,14 @@ Gameboard SimulateMove(Gameboard &board, int pit) {
 Gameboard SimulateOutOfMoves(Gameboard &board) {
     Gameboard simulation = board;
 
-    simulation.Capture(PlayerOne, PlayerBoard(PlayerOne), NULL);
-    simulation.Capture(PlayerTwo, PlayerBoard(PlayerTwo), NULL);
+    simulation.Capture(PlayerOne, PlayerZone(PlayerOne), NULL);
+    simulation.Capture(PlayerTwo, PlayerZone(PlayerTwo), NULL);
 
     return simulation;
 }
 
 int BiggestCaptureMoveScore(Gameboard &board, Player p) {
-    Range player_pits = PlayerBoard(p);
+    Range player_pits = PlayerZone(p);
     int score = 0;
     
     if(board.HasLegalMove(p)){
@@ -76,8 +76,8 @@ int BotController::ChoosePit(Gameboard &board) {
     setcolor(TEXT_COLOR);
     std::cout << " is thinking... ";
 
-    Range player_pits = PlayerBoard(player);
-    Range opponent_pits = PlayerBoard(Opponent(player));
+    Range player_pits = PlayerZone(player);
+    Range opponent_pits = PlayerZone(Opponent(player));
 
     int old_score = board.PlayerScore(player);
     int opponent_old_score = board.PlayerScore(Opponent(player));
@@ -100,6 +100,7 @@ int BotController::ChoosePit(Gameboard &board) {
 
         int lean = ((new_score - old_score) - (opponent_new_score - opponent_old_score)) + 25;
 
+        // TODO this doesn't give equal probability to every choice
         if(lean > choice_lean || (lean == choice_lean && rand()%2 == 0)) {
             choice_lean = lean;
             choice = pit;

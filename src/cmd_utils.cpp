@@ -1,3 +1,5 @@
+// Adapted from the file supplied by the teacher on Moodle.
+
 // PROG - MIEIC
 // JAS
 // Example of a program that prints colored characters on the console (in text mode)

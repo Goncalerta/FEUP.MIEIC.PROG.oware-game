@@ -1,10 +1,9 @@
+// Adapted from the file supplied by the teacher on Moodle.
+// Provides an easy way of controlling the console colors and cursor, and to clear the screen.
 #ifndef CMD_UTILS_H
 #define CMD_UTILS_H
 
 #define NOMINMAX
-#include <iostream>
-#include <ctime>
-#include <cstdlib>
 #include <windows.h>
 
 //==========================================================================================

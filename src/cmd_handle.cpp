@@ -1,5 +1,4 @@
 #include "cmd_handle.h"
-#include "cmd_utils.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -269,7 +268,7 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     std::cout << std::endl;
 }
 
-void DrawOutOfMoves(Gameboard &board, Player p) {
+void ShowOutOfMovesGameboard(Gameboard &board, Player p) {
     clrscr();
     DrawGameboard(board, false, false);
     gotoxy(0, GAME_PROMPT_LINE);

@@ -1,4 +1,3 @@
-#include <iostream>
 #include "gameboard.h"
 
 Gameboard::Gameboard(): p1_score(0), p2_score(0) {
@@ -15,44 +14,39 @@ int Gameboard::PlayerScore(Player p) {
     }
 }
 
-
 bool Gameboard::HasSeeds(Player p) {
-    int start = p == PlayerOne? 0 : 6;
+    int start = (p == PlayerOne? 0 : 6);
     for(int i = start; i < start+6; i++) {
         if(pits[i] != 0) return true;
     }
     return false;
 }
 
-
 bool Gameboard::HasLegalMove(Player p) {
-    // TODO [rename] PlayerBoard -> PlayerZone
-    Range player_board = PlayerBoard(p);
+    Range player_zone = PlayerZone(p);
     bool opponent_has_seeds = HasSeeds(Opponent(p));
     
-    for(int i = player_board.begin; i <= player_board.end; i++) {
+    for(int i = player_zone.begin; i <= player_zone.end; i++) {
         if(pits[i] == 0) continue;
-        if(opponent_has_seeds || pits[i] > player_board.end - i) return true;
+        if(opponent_has_seeds || pits[i] > player_zone.end - i) return true;
     }
     return false;
 }
 
-
 PitSowableState Gameboard::Sowable(Player p, int pit) {
-    // TODO [rename] PitZone -> PitOwner
-    bool in_player_zone = PitZone(pit) == p;
+    bool in_player_zone = (PitOwner(pit) == p);
 
-    // Must be a nonempty pit in the current player zone
+    // Must be a non-empty pit in the current player zone
     if(!in_player_zone) return PitInOpponentZone;
     if(pits[pit] == 0) return EmptyPit;
 
-    // If the enemy has nonempty pits, all is fine
+    // If the enemy has non-empty pits, it's ok to sow.
     if(HasSeeds(Opponent(p))) return ValidPit;
     
     // Otherwise, the player must make a move that gives
     // the opponent seeds.
-    int player_zone_end_pit = p == PlayerOne? 5 : 11;
-    bool gives_seeds = pits[pit] > player_zone_end_pit - pit;
+    int player_zone_end_pit = (p == PlayerOne? 5 : 11);
+    bool gives_seeds = (pits[pit] > player_zone_end_pit - pit);
     if(!gives_seeds) return OpponentOutOfSeeds;
 
     return ValidPit;
@@ -82,7 +76,7 @@ int Gameboard::Sow(int pit, SetPitAnimator set_pit) {
 bool Gameboard::IsCapturable(Player p, int pit) {
     // Under normal conditions, a player can only capture 
     // their opponent's zone of the board. 
-    return IsCapturable(PlayerBoard(Opponent(p)), pit);
+    return IsCapturable(PlayerZone(Opponent(p)), pit);
 }
 
 bool Gameboard::IsCapturable(Range capturable_range, int pit) {
@@ -92,7 +86,7 @@ bool Gameboard::IsCapturable(Range capturable_range, int pit) {
 Range Gameboard::CaptureRange(Player p, int pit) {
     int end = pit;
     int begin = end;
-    Range capturable_range = PlayerBoard(Opponent(p));
+    Range capturable_range = PlayerZone(Opponent(p));
 
     while(IsCapturable(capturable_range, begin-1)) {
         begin--;
@@ -101,19 +95,13 @@ Range Gameboard::CaptureRange(Player p, int pit) {
     return Range(begin, end);
 }
 
-int Gameboard::CaptureScore(Range r) {
+void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score) {
     int score = 0;
 
     for(int i = r.begin; i <= r.end; i++) {
         score += pits[i];
         pits[i] = 0;
     }
-    
-    return score;
-}
-
-void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score) {
-    int score = CaptureScore(r);
 
     if(p == PlayerOne) {
         if(set_score) set_score(p, p1_score, p1_score + score);
@@ -125,9 +113,11 @@ void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score) {
 }
 
 bool Gameboard::IsGrandSlam(Player p, Range capture) {
-    Range opponent_board = PlayerBoard(Opponent(p));
+    Range opponent_board = PlayerZone(Opponent(p));
+
     for(int i = opponent_board.begin; i <= opponent_board.end; i++) {
         if(pits[i] != 0 && !capture.Contains(i)) return false;
     }
+    
     return true;
 }
