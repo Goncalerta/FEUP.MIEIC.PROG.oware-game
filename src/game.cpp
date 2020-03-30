@@ -48,8 +48,7 @@ void Game::PlayMove(int choice) {
         
         // "Grand Slams" cancel capture in abapa version
         if(!board.IsGrandSlam(current_player, capture)) {
-            HighlightCapture(capture, current_player, board);
-            board.Capture(current_player, capture, SetScoreAnimation);
+            board.Capture(current_player, capture, SetScoreAnimation, HighlightCapture);
             UpdateWinState();
         }
     }
@@ -59,8 +58,7 @@ void Game::OutOfMoves() {
     ShowOutOfMovesGameboard(board, current_player);
     
     Range capture = PlayerZone(current_player);
-    HighlightCapture(capture, current_player, board);
-    board.Capture(current_player, capture, SetScoreAnimation);
+    board.Capture(current_player, capture, SetScoreAnimation, HighlightCapture);
     
     UpdateWinState();
 }
@@ -69,12 +67,9 @@ void Game::EndlessCycle() {
     Player opponent = Opponent(current_player);
     Range player_zone = PlayerZone(current_player);
     Range opponent_zone = PlayerZone(opponent);
-
-    // TODO HighlightCapture may become Gameboard::capture animator
-    HighlightCapture(player_zone, current_player, board);
-    board.Capture(current_player, player_zone, SetScoreAnimation);
-    HighlightCapture(opponent_zone, opponent, board);
-    board.Capture(opponent, opponent_zone, SetScoreAnimation);
+    
+    board.Capture(current_player, player_zone, SetScoreAnimation, HighlightCapture);
+    board.Capture(opponent, opponent_zone, SetScoreAnimation, HighlightCapture);
     
     UpdateWinState();
 }

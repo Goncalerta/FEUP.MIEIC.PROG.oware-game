@@ -19,6 +19,14 @@ typedef void (*SetPitAnimator)(int, int);
 // Parameter 3: The new score of that player.
 typedef void (*SetScoreAnimator)(Player, int, int);
 
+// A callback function to be used by `Gameboard::Capture` to animate 
+// the capture.
+//
+// Parameter 1: The player who is capturing.
+// Parameter 2: The range of pits being captured.
+// Parameter 3: The array of 12 pits from `Gameboard`.
+typedef void (*CaptureAnimator)(Player, Range, int*);
+
 // The return value of `Gameboard::Sowable`.
 //
 // Represents either that the pit may be sowed successfully 
@@ -70,7 +78,7 @@ struct Gameboard {
     // updating of each pit's number of seeds while sowing.
     //
     // Returns the last pit sowed.
-    int Sow(int pit, SetPitAnimator set_pit);
+    int Sow(int pit, SetPitAnimator set_pit = nullptr);
 
     // Returns whether the given `pit` (a number between 0 and 11) may
     // be captured by Player `p`.
@@ -93,9 +101,9 @@ struct Gameboard {
 
     // `Player p` captures the given `Range r`, scoring all seeds in 
     // that `Range`.
-    // A callback `set_score` may be passed, which should animate the
-    // score updating.
-    void Capture(Player p, Range r, SetScoreAnimator set_score);
+    // Callbacks `capture` and `set_score` may be passed, which should 
+    // animate the capture and score updating, respectively.
+    void Capture(Player p, Range r, SetScoreAnimator set_score = nullptr, CaptureAnimator capture = nullptr);
 
     // Returns whether capturing all pits in `Range r` by `Player p` would
     // be considered a 'GrandSlam'.

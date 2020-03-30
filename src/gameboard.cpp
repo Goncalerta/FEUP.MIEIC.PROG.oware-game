@@ -95,7 +95,8 @@ Range Gameboard::CaptureRange(Player p, int pit) {
     return Range(begin, end);
 }
 
-void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score) {
+void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score, CaptureAnimator capture) {
+    if(capture) capture(p, r, pits);
     int score = 0;
 
     for(int i = r.begin; i <= r.end; i++) {
@@ -118,6 +119,6 @@ bool Gameboard::IsGrandSlam(Player p, Range capture) {
     for(int i = opponent_board.begin; i <= opponent_board.end; i++) {
         if(pits[i] != 0 && !capture.Contains(i)) return false;
     }
-    
+
     return true;
 }

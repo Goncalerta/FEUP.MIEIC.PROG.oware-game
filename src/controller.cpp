@@ -17,13 +17,13 @@ Gameboard SimulateMove(Gameboard &board, int pit) {
     Gameboard simulation = board;
     Player current_player = PitOwner(pit);
     
-    int last_sowed = simulation.Sow(pit, NULL);
+    int last_sowed = simulation.Sow(pit);
 
     if(simulation.IsCapturable(current_player, last_sowed)) {
         Range capture = simulation.CaptureRange(current_player, last_sowed);
 
         if(!simulation.IsGrandSlam(current_player, capture)) {
-            simulation.Capture(current_player, capture, NULL);
+            simulation.Capture(current_player, capture);
         }
     }
 
@@ -33,8 +33,8 @@ Gameboard SimulateMove(Gameboard &board, int pit) {
 Gameboard SimulateOutOfMoves(Gameboard &board) {
     Gameboard simulation = board;
 
-    simulation.Capture(PlayerOne, PlayerZone(PlayerOne), NULL);
-    simulation.Capture(PlayerTwo, PlayerZone(PlayerTwo), NULL);
+    simulation.Capture(PlayerOne, PlayerZone(PlayerOne));
+    simulation.Capture(PlayerTwo, PlayerZone(PlayerTwo));
 
     return simulation;
 }

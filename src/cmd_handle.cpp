@@ -315,12 +315,12 @@ void SetScoreAnimation(Player p, int old_value, int new_value) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
-void HighlightCapture(Range capture, Player p, Gameboard &board) {
+void HighlightCapture(Player p, Range capture, int *pits) {
     int player_color = p == PlayerOne? PLAYER_ONE_COLOR : PLAYER_TWO_COLOR;
     setcolor(WHITE, player_color);
     for(int i = capture.begin; i <= capture.end; i++) {
         set_cursor_on_pit(i);
-        std::cout << std::setw(2) << board.pits[i];
+        std::cout << std::setw(2) << pits[i];
     }
     setcolor(TEXT_COLOR, BLACK);
     std::this_thread::sleep_for(std::chrono::milliseconds(600));

@@ -55,6 +55,6 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls);
 void ShowOutOfMovesGameboard(Gameboard &board, Player p);
 void SetPit(int pit, int value);
 void SetScoreAnimation(Player p, int old_value, int new_value);
-void HighlightCapture(Range capture, Player p, Gameboard &board);
+void HighlightCapture(Player p, Range capture, int *pits);
 
 #endif
