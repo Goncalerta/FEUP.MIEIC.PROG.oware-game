@@ -3,10 +3,6 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <ios>
-#include <limits>
-#include <string>
-#include <iomanip>
 #include <cstdlib>  
 #include <ctime> 
 
@@ -30,6 +26,7 @@ Gameboard SimulateMove(Gameboard &board, int pit) {
     return simulation;
 }
 
+// TODO [cleanup] this should be possible to join with actual move
 Gameboard SimulateOutOfMoves(Gameboard &board) {
     Gameboard simulation = board;
 
@@ -39,6 +36,7 @@ Gameboard SimulateOutOfMoves(Gameboard &board) {
     return simulation;
 }
 
+// TODO [cleanup] what to do with this?
 int BiggestCaptureMoveScore(Gameboard &board, Player p) {
     Range player_pits = PlayerZone(p);
     int score = 0;
@@ -65,97 +63,61 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
 }
 
 int BotController::ChoosePit(Gameboard &board) {
-    clrscr();
-    DrawGameboard(board, true, false);
+    DisplayBotPlayingGameboard(board, player);
 
-    gotoxy(0, GAME_PROMPT_LINE);
-    DrawPlayerLabel(player);
-    setcolor(TEXT_COLOR);
-    std::cout << " is playing this turn." << std::endl;
-    DrawPlayerLabel(player);
-    setcolor(TEXT_COLOR);
-    std::cout << " is thinking... ";
-
-    Range player_pits = PlayerZone(player);
-    Range opponent_pits = PlayerZone(Opponent(player));
+    Range player_zone = PlayerZone(player);
+    Range opponent_zone = PlayerZone(Opponent(player));
 
     int old_score = board.PlayerScore(player);
     int opponent_old_score = board.PlayerScore(Opponent(player));
 
+    // The default choice is surrender, however the bot should
+    // try to choose any legal move over it. As so, the initial
+    // lean is negative, as the calculated lean will always be
+    // positive no matter how bad the move is.
     int choice = SURRENDER;
     int choice_lean = -1;
     
-    for(int pit = player_pits.begin; pit <= player_pits.end; pit++) {
+    // Simulate legal moves to find out which one gives the biggest
+    // immediate payoff.
+    for(int pit = player_zone.begin; pit <= player_zone.end; pit++) {
         if(board.Sowable(player, pit) != ValidPit) continue;
-        // Any legal move makes more sense that surrendering
+        // Any legal move makes more sense that surrendering, even
+        // if it is a guaranteed lost.
         if(choice == SURRENDER) choice = pit;
 
         Gameboard simulation = SimulateMove(board, pit);
 
         int new_score = simulation.PlayerScore(player);
-        if(new_score >= 25) return pit;
+        if(new_score >= 25) return pit; // Always choose winning moves
 
         int opponent_new_score = BiggestCaptureMoveScore(simulation, Opponent(player));
-        if(opponent_new_score >= 25) continue;
+        if(opponent_new_score >= 25) continue; // Always avoid losing moves
 
+        // A positive integer that reflects how good this play is in terms
+        // of immediate payoff.
         int lean = ((new_score - old_score) - (opponent_new_score - opponent_old_score)) + 25;
 
-        // TODO this doesn't give equal probability to every choice
+        // TODO probability problem
         if(lean > choice_lean || (lean == choice_lean && rand()%2 == 0)) {
             choice_lean = lean;
             choice = pit;
         }
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(800));
+    std::this_thread::sleep_for(std::chrono::milliseconds(BOT_THINKING_DELAY));
     std::cout << PitToChar(choice) << std::endl;
     return choice;
 }
 
 bool BotController::ask_endless_cycle() {
+    // The bot will just believe the player, as there is no
+    // obvious algorithm to determine whether the game has
+    // been reduced to an endless cycle.
     return true;
 }
 
 CmdController::CmdController(Player p): Controller(p) {}
-
-bool PromptYesNo(Player p) {
-    char answer;
-    char agree_char = p == PlayerOne? 'y' : 'Y';
-    char disagree_char = p == PlayerOne? 'n' : 'N';
-    char opponent_agree_char = p == PlayerOne? 'Y' : 'y';
-    char opponent_disagree_char = p == PlayerOne? 'N' : 'n';
-    const char *valid_inputs = p == PlayerOne? "y/n" : "Y/N";
-
-    while(true) {
-        std::cin >> answer;
-
-        if(std::cin.fail()) {
-            // Closing stdin in prompt is interpreted as a 'no'
-            if(std::cin.eof()) return false;
-
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid input. Input (" << valid_inputs << "): ";
-
-        } else if(answer == opponent_agree_char) {
-            std::cout << "'" << opponent_agree_char << "' is Player " << (p == PlayerOne? "2" : "1")
-                << "'s agree command. Input (" << valid_inputs << "): ";
-        
-        } else if(answer == opponent_disagree_char) {
-            std::cout << "'" << opponent_disagree_char << "' is Player " << (p == PlayerOne? "2" : "1")
-                << "'s disagree command. Input (" << valid_inputs << "): ";
-        
-        } else if(answer == agree_char) {
-            return true;
-        
-        } else if(answer == disagree_char) {
-            return false;
-        
-        } else {
-            std::cout << "Invalid input. Input (" << valid_inputs << "): ";
-        }
-    }
-}
 
 int CmdController::ChoosePit(Gameboard &board) {
     char user_input;
@@ -163,18 +125,10 @@ int CmdController::ChoosePit(Gameboard &board) {
     bool valid_input;
     std::string warning_message = "";
     PitSowableState sowable_state;
-    bool playing_p1 = player == PlayerOne;
+    bool playing_p1 = (player == PlayerOne);
 
     do {
-        clrscr();
-        DrawGameboard(board, playing_p1, !playing_p1);
-        
-        gotoxy(0, GAME_PROMPT_LINE);
-        DrawPlayerLabel(player);
-        setcolor(TEXT_COLOR);
-        std::cout << " is playing this turn." << std::endl;       
-        if(warning_message != "") std::cout << warning_message << std::endl;
-        std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
+        DisplayPlayingGameboard(board, player, warning_message);
         std::cin >> user_input;
 
         // Validate and parse input
@@ -199,7 +153,7 @@ int CmdController::ChoosePit(Gameboard &board) {
         } 
         
         if(user_input == QuitChar(player)) {
-            std::cout << "Are you sure? (" << (player == PlayerOne? "y/n" : "Y/N") << "): ";
+            std::cout << "Are you sure? (" << (playing_p1? "y/n" : "Y/N") << "): ";
 
             if(PromptYesNo(player)) {
                 return SURRENDER;
@@ -207,7 +161,8 @@ int CmdController::ChoosePit(Gameboard &board) {
                 valid_input = false;
                 continue;
             }
-        } 
+        }
+
         if(user_input == ClaimEndlessCycleChar(player)) {
             // Wikipedia specifies that the game only ends due to both players agreeing
             // that it has been reduced to an endless cycle if each player has seeds in 
@@ -220,6 +175,7 @@ int CmdController::ChoosePit(Gameboard &board) {
                 continue;
             }
         }
+
         if(user_input == QuitChar(Opponent(player))) {
             warning_message = "'";
             warning_message.push_back(user_input);
@@ -229,6 +185,7 @@ int CmdController::ChoosePit(Gameboard &board) {
             valid_input = false;
             continue;
         }
+
         if(user_input == ClaimEndlessCycleChar(Opponent(player))) {
             warning_message = "'";
             warning_message.push_back(user_input);

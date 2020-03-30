@@ -55,7 +55,7 @@ void Game::PlayMove(int choice) {
 }
 
 void Game::OutOfMoves() {
-    ShowOutOfMovesGameboard(board, current_player);
+    DisplayOutOfMovesGameboard(board, current_player);
     
     Range capture = PlayerZone(current_player);
     board.Capture(current_player, capture, SetScoreAnimation, HighlightCapture);

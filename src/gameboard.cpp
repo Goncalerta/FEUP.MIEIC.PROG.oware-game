@@ -40,7 +40,7 @@ PitSowableState Gameboard::Sowable(Player p, int pit) {
     if(!in_player_zone) return PitInOpponentZone;
     if(pits[pit] == 0) return EmptyPit;
 
-    // If the enemy has non-empty pits, it's ok to sow.
+    // If the opponent has non-empty pits, it's ok to sow.
     if(HasSeeds(Opponent(p))) return ValidPit;
     
     // Otherwise, the player must make a move that gives
@@ -62,6 +62,7 @@ int Gameboard::Sow(int pit, SetPitAnimator set_pit) {
     while(seeds != 0) {
         current_pit++;
         if(current_pit == 12) current_pit = 0;
+        // chosen pit is always left empty, even after a full lap.
         if(current_pit == pit) continue;
 
         pits[current_pit]++;
@@ -99,11 +100,13 @@ void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score, CaptureAn
     if(capture) capture(p, r, pits);
     int score = 0;
 
+    // collect and count all seeds in range
     for(int i = r.begin; i <= r.end; i++) {
         score += pits[i];
         pits[i] = 0;
     }
 
+    // update score of the player capturing
     if(p == PlayerOne) {
         if(set_score) set_score(p, p1_score, p1_score + score);
         p1_score += score;

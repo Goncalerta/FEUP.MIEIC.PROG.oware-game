@@ -4,7 +4,6 @@
 #include <thread>
 #include <ios>
 #include <limits>
-#include <string>
 #include <iomanip>
 
 int CharToPit(char c) {
@@ -49,6 +48,24 @@ char QuitChar(Player p) {
 
 char ClaimEndlessCycleChar(Player p) {
     return p == PlayerOne? 'p' : 'P';
+}
+
+char AgreeChar(Player p) {
+    return p == PlayerOne? 'y' : 'Y';
+}
+
+char DisagreeChar(Player p) {
+    return p == PlayerOne? 'n' : 'N';
+}
+
+void DrawPlayerLabel(Player p) {
+    if(p == PlayerOne) {
+        setcolor(PLAYER_ONE_COLOR);
+        std::cout << "Player 1";
+    } else {
+        setcolor(PLAYER_TWO_COLOR);
+        std::cout << "Player 2";
+    }
 }
 
 void DrawTitleScreen() {
@@ -106,16 +123,6 @@ MenuOption MenuPrompt() {
     }
 }
 
-void DrawPlayerLabel(Player p) {
-    if(p == PlayerOne) {
-        setcolor(PLAYER_ONE_COLOR);
-        std::cout << "Player 1";
-    } else {
-        setcolor(PLAYER_TWO_COLOR);
-        std::cout << "Player 2";
-    }
-}
-
 void DisplayGameoverScreen(Game &game) {
     clrscr();
     DrawTitleScreen();
@@ -161,7 +168,6 @@ void DisplayGameoverScreen(Game &game) {
     std::cout << "Player 1 score: ";
     setcolor(PLAYER_ONE_COLOR);
     std::cout << game.board.p1_score << "\t";
-    
 
     setcolor(TEXT_COLOR);
     std::cout << "Player 2 score: ";
@@ -268,7 +274,7 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     std::cout << std::endl;
 }
 
-void ShowOutOfMovesGameboard(Gameboard &board, Player p) {
+void DisplayOutOfMovesGameboard(Gameboard &board, Player p) {
     clrscr();
     DrawGameboard(board, false, false);
     gotoxy(0, GAME_PROMPT_LINE);
@@ -277,25 +283,50 @@ void ShowOutOfMovesGameboard(Gameboard &board, Player p) {
     std::cout << " is out of legal moves.";
 }
 
-// TODO [cleanup] global variables, name
-void set_cursor_on_pit(int pit) {
+void DisplayPlayingGameboard(Gameboard &board, Player p, std::string warning_message) {
+    bool playing_p1 = (p == PlayerOne);
+
+    clrscr();
+    DrawGameboard(board, playing_p1, !playing_p1);
+    
+    gotoxy(0, GAME_PROMPT_LINE);
+    DrawPlayerLabel(p);
+    setcolor(TEXT_COLOR);
+    std::cout << " is playing this turn." << std::endl;       
+    if(warning_message != "") std::cout << warning_message << std::endl;
+    std::cout << "Input pit letter (" << (playing_p1? "a-f" : "A-F") << "): ";
+}
+
+void DisplayBotPlayingGameboard(Gameboard &board, Player p) {
+    clrscr();
+    DrawGameboard(board, true, false);
+
+    gotoxy(0, GAME_PROMPT_LINE);
+    DrawPlayerLabel(p);
+    setcolor(TEXT_COLOR);
+    std::cout << " is playing this turn." << std::endl;
+    DrawPlayerLabel(p);
+    setcolor(TEXT_COLOR);
+    std::cout << " is thinking... ";
+}
+
+void SetCursorOnPit(int pit) {
     int x, y;
     if(pit < 6) {
-        y = 3;
-        x = 14 + 4*pit;
+        y = PLAYER_ONE_PITS_LINE;
+        x = PITS_START_COLUMN + 4*pit;
     } else {
-        y = 1;
-        x = 14 + 4*(11 - pit);
+        y = PLAYER_TWO_PITS_LINE;
+        x = PITS_START_COLUMN + 4*(11 - pit);
     }
     gotoxy(x, y);
 }
 
-// TODO [cleanup] global variable
 void SetPit(int pit, int value) {
-    set_cursor_on_pit(pit);
+    SetCursorOnPit(pit);
     setcolor(PLAYER_NEUTRAL_COLOR);
     std::cout << std::setw(2) << value;
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(UPDATE_PIT_DELAY));
 }
 
 void SetScore(Player p, int value) {
@@ -309,19 +340,58 @@ void SetScore(Player p, int value) {
 void SetScoreAnimation(Player p, int old_value, int new_value) {
     for(int i = old_value; i <= new_value; i++) {
         SetScore(p, i);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(UPDATE_SCORE_TICK));
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(SCORE_UPDATED_DELAY));
 }
 
 void HighlightCapture(Player p, Range capture, int *pits) {
-    int player_color = p == PlayerOne? PLAYER_ONE_COLOR : PLAYER_TWO_COLOR;
+    int player_color = (p == PlayerOne? PLAYER_ONE_COLOR : PLAYER_TWO_COLOR);
     setcolor(WHITE, player_color);
+    
     for(int i = capture.begin; i <= capture.end; i++) {
-        set_cursor_on_pit(i);
+        SetCursorOnPit(i);
         std::cout << std::setw(2) << pits[i];
     }
+    
     setcolor(TEXT_COLOR, BLACK);
-    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+    std::this_thread::sleep_for(std::chrono::milliseconds(CAPTURE_DELAY));
+}
+
+bool PromptYesNo(Player p) {
+    char answer;
+    const char *valid_inputs = (p == PlayerOne? "y/n" : "Y/N");
+
+    while(true) {
+        std::cin >> answer;
+
+        if(std::cin.fail()) {
+            // Closing stdin in prompt is interpreted as a 'no'
+            if(std::cin.eof()) return false;
+
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input. Input (" << valid_inputs << "): ";
+
+        } else if(answer == AgreeChar(Opponent(p))) {
+            std::cout << "'" << AgreeChar(Opponent(p)) << "' is Player " 
+                << (p == PlayerOne? "2" : "1")
+                << "'s agree command. Input (" << valid_inputs << "): ";
+        
+        } else if(answer == DisagreeChar(Opponent(p))) {
+            std::cout << "'" << DisagreeChar(Opponent(p)) << "' is Player " 
+                << (p == PlayerOne? "2" : "1")
+                << "'s disagree command. Input (" << valid_inputs << "): ";
+        
+        } else if(answer == AgreeChar(p)) {
+            return true;
+        
+        } else if(answer == DisagreeChar(p)) {
+            return false;
+        
+        } else {
+            std::cout << "Invalid input. Input (" << valid_inputs << "): ";
+        }
+    }
 }
