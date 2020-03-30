@@ -75,7 +75,7 @@ struct Gameboard {
     // Callbacks `capture` and `set_score` may be passed, which should 
     // animate the capture and score updating, respectively.
     //
-    // Returns whether a capture took place.
+    // Returns whether the player captured any seeds with this move.
     bool PlayMove(
         int pit, 
         Player p, 

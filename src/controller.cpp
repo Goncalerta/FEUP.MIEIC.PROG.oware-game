@@ -17,8 +17,7 @@ int BotController::BestMoveScore(Gameboard &board, Player p) {
             if(board.Sowable(p, pit) != ValidPit) continue;
             
             Gameboard simulation = board;
-            Player current_player = PitOwner(pit);
-            simulation.PlayMove(pit, current_player); 
+            simulation.PlayMove(pit, p); 
 
             int new_score = simulation.PlayerScore(p);
             if(new_score >= 25) return new_score;
@@ -62,9 +61,9 @@ int BotController::ChoosePit(Gameboard &board) {
         // if it is a guaranteed lost.
         if(choice == SURRENDER) choice = pit;
 
+        // copies the `Gameboard` to experiment simulations of moves
         Gameboard simulation = board; 
-        Player current_player = PitOwner(pit);
-        simulation.PlayMove(pit, current_player); 
+        simulation.PlayMove(pit, player); 
 
         int new_score = simulation.PlayerScore(player);
         if(new_score >= 25) return pit; // Always choose winning moves
