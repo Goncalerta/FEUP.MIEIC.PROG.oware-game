@@ -8,36 +8,7 @@
 
 BotController::BotController(Player p): Controller(p) {}
 
-// TODO [cleanup] this should be possible to join with actual move
-Gameboard SimulateMove(Gameboard &board, int pit) {
-    Gameboard simulation = board;
-    Player current_player = PitOwner(pit);
-    
-    int last_sowed = simulation.Sow(pit);
-
-    if(simulation.IsCapturable(current_player, last_sowed)) {
-        Range capture = simulation.CaptureRange(current_player, last_sowed);
-
-        if(!simulation.IsGrandSlam(current_player, capture)) {
-            simulation.Capture(current_player, capture);
-        }
-    }
-
-    return simulation;
-}
-
-// TODO [cleanup] this should be possible to join with actual move
-Gameboard SimulateOutOfMoves(Gameboard &board) {
-    Gameboard simulation = board;
-
-    simulation.Capture(PlayerOne, PlayerZone(PlayerOne));
-    simulation.Capture(PlayerTwo, PlayerZone(PlayerTwo));
-
-    return simulation;
-}
-
-// TODO [cleanup] what to do with this?
-int BiggestCaptureMoveScore(Gameboard &board, Player p) {
+int BotController::BestMoveScore(Gameboard &board, Player p) {
     Range player_pits = PlayerZone(p);
     int score = 0;
     
@@ -45,7 +16,9 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
         for(int pit = player_pits.begin; pit <= player_pits.end; pit++) {
             if(board.Sowable(p, pit) != ValidPit) continue;
             
-            Gameboard simulation = SimulateMove(board, pit);
+            Gameboard simulation = board;
+            Player current_player = PitOwner(pit);
+            simulation.PlayMove(pit, current_player); 
 
             int new_score = simulation.PlayerScore(p);
             if(new_score >= 25) return new_score;
@@ -55,7 +28,10 @@ int BiggestCaptureMoveScore(Gameboard &board, Player p) {
             }
         }
     } else {
-        Gameboard simulation = SimulateOutOfMoves(board);
+        // out of moves means that the player would capture their seeds
+        Gameboard simulation = board;
+        simulation.Capture(p, PlayerZone(p));
+
         score = simulation.PlayerScore(p);
     }
 
@@ -86,12 +62,14 @@ int BotController::ChoosePit(Gameboard &board) {
         // if it is a guaranteed lost.
         if(choice == SURRENDER) choice = pit;
 
-        Gameboard simulation = SimulateMove(board, pit);
+        Gameboard simulation = board; 
+        Player current_player = PitOwner(pit);
+        simulation.PlayMove(pit, current_player); 
 
         int new_score = simulation.PlayerScore(player);
         if(new_score >= 25) return pit; // Always choose winning moves
 
-        int opponent_new_score = BiggestCaptureMoveScore(simulation, Opponent(player));
+        int opponent_new_score = BestMoveScore(simulation, Opponent(player));
         if(opponent_new_score >= 25) continue; // Always avoid losing moves
 
         // A positive integer that reflects how good this play is in terms

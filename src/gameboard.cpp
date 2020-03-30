@@ -33,6 +33,28 @@ bool Gameboard::HasLegalMove(Player p) {
     return false;
 }
 
+bool Gameboard::PlayMove(
+  int pit, 
+  Player p, 
+  SetPitAnimator set_pit, 
+  SetScoreAnimator set_score, 
+  CaptureAnimator capture
+) {
+    int last_sowed = Sow(pit, set_pit);
+
+    if(IsCapturable(p, last_sowed)) {
+        Range capture_range = CaptureRange(p, last_sowed);
+        
+        // "Grand Slams" cancel capture in abapa version
+        if(!IsGrandSlam(p, capture_range)) {
+            Capture(p, capture_range, set_score, capture);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 PitSowableState Gameboard::Sowable(Player p, int pit) {
     bool in_player_zone = (PitOwner(pit) == p);
 
@@ -96,7 +118,12 @@ Range Gameboard::CaptureRange(Player p, int pit) {
     return Range(begin, end);
 }
 
-void Gameboard::Capture(Player p, Range r, SetScoreAnimator set_score, CaptureAnimator capture) {
+void Gameboard::Capture(
+  Player p, 
+  Range r, 
+  SetScoreAnimator set_score, 
+  CaptureAnimator capture
+) {
     if(capture) capture(p, r, pits);
     int score = 0;
 

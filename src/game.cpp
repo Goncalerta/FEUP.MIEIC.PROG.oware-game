@@ -41,17 +41,10 @@ void Game::PlayTurn(Controller *p1_controller, Controller *p2_controller) {
 }
 
 void Game::PlayMove(int choice) {
-    int last_sowed = board.Sow(choice, SetPit);
-
-    if(board.IsCapturable(current_player, last_sowed)) {
-        Range capture = board.CaptureRange(current_player, last_sowed);
-        
-        // "Grand Slams" cancel capture in abapa version
-        if(!board.IsGrandSlam(current_player, capture)) {
-            board.Capture(current_player, capture, SetScoreAnimation, HighlightCapture);
-            UpdateWinState();
-        }
-    }
+    bool has_captured = board.PlayMove(
+        choice, current_player, SetPit, SetScoreAnimation, HighlightCapture);
+    
+    if(has_captured) UpdateWinState();
 }
 
 void Game::OutOfMoves() {

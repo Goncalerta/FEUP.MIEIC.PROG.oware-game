@@ -59,6 +59,15 @@ struct BotController: public Controller {
 
     int ChoosePit(Gameboard &board);
     bool ask_endless_cycle();
+
+    // Returns the score of `Player p` if they were to play the best
+    // possible move on the given `Gameboard` right now.
+    //
+    // This function shortcircuits at the first that scores 25 or more
+    // as that would be a guaranteed win for that player and so it is
+    // not necessary to take into account the absolute maximum score 
+    // possible in that case.
+    int BestMoveScore(Gameboard &board, Player p);
 };
 
 #endif

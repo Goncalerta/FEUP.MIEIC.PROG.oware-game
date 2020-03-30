@@ -66,6 +66,24 @@ struct Gameboard {
     // Returns whether the given Player `p` may sow at least one pit.
     bool HasLegalMove(Player p);
 
+    // `Player p` plays the move of sowing the given `pit`. Must be a 
+    // playable move, so the pit must be valid (between 0 and 11) and sowable 
+    // (`Gameboard::Sowable(current_player, pit)` must return `ValidPit`).
+    //
+    // A callback `set_pit` may be passed, which should animate the
+    // updating of each pit's number of seeds while sowing.
+    // Callbacks `capture` and `set_score` may be passed, which should 
+    // animate the capture and score updating, respectively.
+    //
+    // Returns whether a capture took place.
+    bool PlayMove(
+        int pit, 
+        Player p, 
+        SetPitAnimator set_pit = nullptr, 
+        SetScoreAnimator set_score = nullptr, 
+        CaptureAnimator capture = nullptr
+    );
+
     // Returns either that the given `pit` (a number between 0 and 11)
     // may be sowed successfully by Player `p`, or the reason because 
     // of which it may not.
@@ -103,7 +121,12 @@ struct Gameboard {
     // that `Range`.
     // Callbacks `capture` and `set_score` may be passed, which should 
     // animate the capture and score updating, respectively.
-    void Capture(Player p, Range r, SetScoreAnimator set_score = nullptr, CaptureAnimator capture = nullptr);
+    void Capture(
+      Player p, 
+      Range r, 
+      SetScoreAnimator set_score = nullptr, 
+      CaptureAnimator capture = nullptr
+    );
 
     // Returns whether capturing all pits in `Range r` by `Player p` would
     // be considered a 'GrandSlam'.
