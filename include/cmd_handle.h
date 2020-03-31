@@ -87,7 +87,7 @@ char DisagreeChar(Player p);
 // Prints the label of the given `Player p` in its color.
 //
 // When `on` is true, the color used is the player's main color.
-// When `on` is false, the 'off' color is used.
+// When `on` is false, the player's 'off' color is used.
 void DrawPlayerLabel(Player p, bool on = true);
 
 

@@ -37,7 +37,7 @@ A legal move is a move where the chosen pit to sow is in the player's side of th
 
 When both players agree that the game has been reduced to an endless cycle (which can only be claimed when both players have seeds in their holes), each player capture the seeds in the respective side of the board, ending the game.
 
-When the game ends, a gameover screen is shown for 4 seconds, declaring the opponent and the score of each player. After that, the user returns to the main menu.
+When the game ends, a gameover screen is shown for 4 seconds, declaring the winner and the score of each player. After that, the user returns to the main menu.
 
 
 
