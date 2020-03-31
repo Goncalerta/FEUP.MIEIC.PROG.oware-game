@@ -48,10 +48,10 @@ int BotController::ChoosePit(Gameboard &board) {
 
     // The default choice is surrender, however the bot should
     // try to choose any legal move over it. As so, the initial
-    // lean is negative, as the calculated lean will always be
+    // payoff is negative, as the calculated payoff will always be
     // positive.
     int choice = SURRENDER;
-    int choice_lean = -1;
+    int choice_payoff = -1;
     
     // Simulate legal moves to find out which one gives the biggest
     // immediate payoff.
@@ -74,19 +74,19 @@ int BotController::ChoosePit(Gameboard &board) {
         int opponent_new_score = BestMoveScore(simulation, Opponent(player));
         if(opponent_new_score >= 25) continue; // Always avoid losing moves
 
-        // `lean` is a positive integer that reflects how good this play is 
+        // `payoff` is a positive integer that reflects how good this play is 
         // in terms of immediate payoff.
         int delta_player = new_score - old_score;
         int delta_opponent = opponent_new_score - opponent_old_score;
-        int lean = new_score * delta_player - opponent_new_score * delta_opponent;
-        // This random factor will distinguish moves with the same (or very similar) `lean`.
+        int payoff = new_score * delta_player - opponent_new_score * delta_opponent;
+        // This random factor will distinguish moves with the same (or very similar) `payoff`.
         int rand_factor = rand()%200;
         // Scale by 100 so `rand_factor` doesn't dominate the choice; add 62500 so the value
         // is guaranteed to be positive.
-        lean = lean*100 + 62500 + rand_factor;
+        payoff = payoff*100 + 62500 + rand_factor;
         
-        if(lean > choice_lean) {
-            choice_lean = lean;
+        if(payoff > choice_payoff) {
+            choice_payoff = payoff;
             choice = pit;
         }
     }
@@ -119,7 +119,7 @@ int CmdController::ChoosePit(Gameboard &board) {
 
         // Validate and parse input
         if(std::cin.fail()) {
-            // Closing stdin in game is interpreted as surrender
+            // EOF in game is interpreted as surrender
             if(std::cin.eof()) {
                 std::cin.clear();
                 return SURRENDER;

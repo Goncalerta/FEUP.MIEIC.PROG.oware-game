@@ -23,25 +23,21 @@ const int TEXT_COLOR = LIGHTGRAY;
 const int MENU_NUMBER_COLOR = DARKGRAY;
 // The main color related to Player 1.
 const int PLAYER_ONE_COLOR = LIGHTBLUE;
-// The main color related to Player 1.
+// The color to represent Player 1's off color (for example, for unsowable pits).
+const int PLAYER_ONE_OFF_COLOR = BLUE;
+// The main color related to Player 2.
 const int PLAYER_TWO_COLOR = LIGHTRED;
+// The color to represent Player 2's off color (for example, for unsowable pits).
+const int PLAYER_TWO_OFF_COLOR = RED;
 // A color neutral to both players (for example, for draws).
 const int PLAYER_NEUTRAL_COLOR = YELLOW;
-// The color to represent Player 1's sowable pits.
-const int PLAYER_ONE_SOWABLE_COLOR = LIGHTBLUE;
-// The color to represent Player 1's unsowable pits.
-const int PLAYER_ONE_UNSOWABLE_COLOR = BLUE;
-// The color to represent Player 2's sowable pits.
-const int PLAYER_TWO_SOWABLE_COLOR = LIGHTRED;
-// The color to represent Player 2's unsowable pits.
-const int PLAYER_TWO_UNSOWABLE_COLOR = RED;
 // The color of score when being updated.
 const int SET_SCORE_COLOR = LIGHTGREEN;
 
 
 // The number of milliseconds the gameover screen lasts on
 // screen before returning to main menu.
-const int GAMEOVER_SCREEN_MILLISECONDS = 6000;
+const int GAMEOVER_SCREEN_MILLISECONDS = 4000;
 // The number of milliseconds between each pit being set
 // while sowing.
 const int UPDATE_PIT_DELAY = 200;
@@ -88,8 +84,11 @@ char AgreeChar(Player p);
 char DisagreeChar(Player p);
 
 
-// Prints the label of the given `Player p` in its main color.
-void DrawPlayerLabel(Player p);
+// Prints the label of the given `Player p` in its color.
+//
+// When `on` is true, the color used is the player's main color.
+// When `on` is false, the 'off' color is used.
+void DrawPlayerLabel(Player p, bool on = true);
 
 
 // Prints the title screen in its color.
@@ -123,7 +122,7 @@ void DisplayGameoverScreen(Game &game);
 //
 // If `p1_controls` is true, show Player 1's 'surrender' and 'claim endless cycle' characters.
 // If `p2_controls` is true, show Player 2's 'surrender' and 'claim endless cycle' characters.
-void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls);
+void DrawGameboard(Gameboard &board, Player current_player, bool p1_controls, bool p2_controls);
 
 // Clears the console and shows the given `Gameboard`, printing that `Player p` is out of legal
 // moves.

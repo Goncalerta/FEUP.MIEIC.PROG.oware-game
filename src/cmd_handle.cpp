@@ -58,12 +58,16 @@ char DisagreeChar(Player p) {
     return p == PlayerOne? 'n' : 'N';
 }
 
-void DrawPlayerLabel(Player p) {
+void DrawPlayerLabel(Player p, bool on) {
     if(p == PlayerOne) {
-        setcolor(PLAYER_ONE_COLOR);
+        if(on) setcolor(PLAYER_ONE_COLOR);
+        else setcolor(PLAYER_ONE_OFF_COLOR);
+
         std::cout << "Player 1";
     } else {
-        setcolor(PLAYER_TWO_COLOR);
+        if(on) setcolor(PLAYER_TWO_COLOR);
+        else setcolor(PLAYER_TWO_OFF_COLOR);
+
         std::cout << "Player 2";
     }
 }
@@ -99,7 +103,7 @@ MenuOption MenuPrompt() {
         std::cin >> user_input;
         
         if(std::cin.fail()) {
-            // Closing stdin in menu is interpreted as exit game
+            // EOF in menu is interpreted as exit game
             if(std::cin.eof()) return ExitGame;
 
             std::cin.clear();
@@ -177,15 +181,15 @@ void DisplayGameoverScreen(Game &game) {
     std::this_thread::sleep_for(std::chrono::milliseconds(GAMEOVER_SCREEN_MILLISECONDS));
 }
 
-void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
+void DrawGameboard(Gameboard &board, Player current_player, bool p1_controls, bool p2_controls) {
     // 'A B C D E F' line
     setcolor(PLAYER_TWO_COLOR);
     std::cout << "               ";
     for(int i = 11; i >= 6; i--) {
         if(board.Sowable(PlayerTwo, i) == ValidPit) {
-            setcolor(PLAYER_TWO_SOWABLE_COLOR);
+            setcolor(PLAYER_TWO_COLOR);
         } else {
-            setcolor(PLAYER_TWO_UNSOWABLE_COLOR);
+            setcolor(PLAYER_TWO_OFF_COLOR);
         } 
 
         std::cout << PitToChar(i) << "   ";
@@ -201,13 +205,13 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     std::cout << std::endl;
     
     // p2 pits line
-    DrawPlayerLabel(PlayerTwo);
+    DrawPlayerLabel(PlayerTwo, current_player == PlayerTwo);
     std::cout << "      ";
     for(int i = 11; i >= 6; i--) {
         if(board.Sowable(PlayerTwo, i) == ValidPit) {
-            setcolor(PLAYER_TWO_SOWABLE_COLOR);
+            setcolor(PLAYER_TWO_COLOR);
         } else {
-            setcolor(PLAYER_TWO_UNSOWABLE_COLOR);
+            setcolor(PLAYER_TWO_OFF_COLOR);
         } 
 
         std::cout << std::setw(2) << board.pits[i] << "  ";
@@ -229,13 +233,13 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     std::cout << std::endl << "             ---------------------------------------" << std::endl;
     
     // p1 pits line
-    DrawPlayerLabel(PlayerOne);
+    DrawPlayerLabel(PlayerOne, current_player == PlayerOne);
     std::cout << "      ";
     for(int i = 0; i <= 5; i++) {
         if(board.Sowable(PlayerOne, i) == ValidPit) {
-            setcolor(PLAYER_ONE_SOWABLE_COLOR);
+            setcolor(PLAYER_ONE_COLOR);
         } else {
-            setcolor(PLAYER_ONE_UNSOWABLE_COLOR);
+            setcolor(PLAYER_ONE_OFF_COLOR);
         } 
 
         std::cout << std::setw(2) << board.pits[i] << "  ";
@@ -256,9 +260,9 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
     std::cout << std::endl << "               ";
     for(int i = 0; i <= 5; i++) {
         if(board.Sowable(PlayerOne, i) == ValidPit) {
-            setcolor(PLAYER_ONE_SOWABLE_COLOR);
+            setcolor(PLAYER_ONE_COLOR);
         } else {
-            setcolor(PLAYER_ONE_UNSOWABLE_COLOR);
+            setcolor(PLAYER_ONE_OFF_COLOR);
         } 
 
         std::cout << PitToChar(i) << "   ";
@@ -276,7 +280,7 @@ void DrawGameboard(Gameboard &board, bool p1_controls, bool p2_controls) {
 
 void DisplayOutOfMovesGameboard(Gameboard &board, Player p) {
     clrscr();
-    DrawGameboard(board, false, false);
+    DrawGameboard(board, p, false, false);
     gotoxy(0, GAME_PROMPT_LINE);
     DrawPlayerLabel(p);
     setcolor(TEXT_COLOR);
@@ -287,7 +291,7 @@ void DisplayPlayingGameboard(Gameboard &board, Player p, std::string warning_mes
     bool playing_p1 = (p == PlayerOne);
 
     clrscr();
-    DrawGameboard(board, playing_p1, !playing_p1);
+    DrawGameboard(board, p, playing_p1, !playing_p1);
     
     gotoxy(0, GAME_PROMPT_LINE);
     DrawPlayerLabel(p);
@@ -299,7 +303,7 @@ void DisplayPlayingGameboard(Gameboard &board, Player p, std::string warning_mes
 
 void DisplayBotPlayingGameboard(Gameboard &board, Player p) {
     clrscr();
-    DrawGameboard(board, true, false);
+    DrawGameboard(board, p, true, false);
 
     gotoxy(0, GAME_PROMPT_LINE);
     DrawPlayerLabel(p);
@@ -367,8 +371,11 @@ bool PromptYesNo(Player p) {
         std::cin >> answer;
 
         if(std::cin.fail()) {
-            // Closing stdin in prompt is interpreted as a 'no'
-            if(std::cin.eof()) return false;
+            // EOF in prompt is interpreted as a 'no'
+            if(std::cin.eof()) {
+                std::cin.clear();
+                return false;
+            }
 
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
