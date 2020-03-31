@@ -49,7 +49,7 @@ int BotController::ChoosePit(Gameboard &board) {
     // The default choice is surrender, however the bot should
     // try to choose any legal move over it. As so, the initial
     // lean is negative, as the calculated lean will always be
-    // positive no matter how bad the move is.
+    // positive.
     int choice = SURRENDER;
     int choice_lean = -1;
     
@@ -66,17 +66,26 @@ int BotController::ChoosePit(Gameboard &board) {
         simulation.PlayMove(pit, player); 
 
         int new_score = simulation.PlayerScore(player);
-        if(new_score >= 25) return pit; // Always choose winning moves
+        if(new_score >= 25) {
+            choice = pit; // Always choose winning moves
+            break;
+        }
 
         int opponent_new_score = BestMoveScore(simulation, Opponent(player));
         if(opponent_new_score >= 25) continue; // Always avoid losing moves
 
-        // A positive integer that reflects how good this play is in terms
-        // of immediate payoff.
-        int lean = ((new_score - old_score) - (opponent_new_score - opponent_old_score)) + 25;
-
-        // TODO probability problem
-        if(lean > choice_lean || (lean == choice_lean && rand()%2 == 0)) {
+        // `lean` is a positive integer that reflects how good this play is 
+        // in terms of immediate payoff.
+        int delta_player = new_score - old_score;
+        int delta_opponent = opponent_new_score - opponent_old_score;
+        int lean = new_score * delta_player - opponent_new_score * delta_opponent;
+        // This random factor will distinguish moves with the same (or very similar) `lean`.
+        int rand_factor = rand()%200;
+        // Scale by 100 so `rand_factor` doesn't dominate the choice; add 62500 so the value
+        // is guaranteed to be positive.
+        lean = lean*100 + 62500 + rand_factor;
+        
+        if(lean > choice_lean) {
             choice_lean = lean;
             choice = pit;
         }

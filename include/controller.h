@@ -5,7 +5,7 @@
 #include "player.h"
 
 // Number of milliseconds the bot waits before returning its
-// calculated move. 
+// chosen move. 
 const int BOT_THINKING_DELAY = 800;
 
 // The return value of `Controller::ChoosePit` when the choice

@@ -1,8 +1,14 @@
 #include "game.h"
 #include "cmd_handle.h"
 #include "controller.h"
+#include <cstdlib>  
+#include <ctime> 
 
 int main() {
+    // RNG will be used by bots to choose between moves with
+    // very similar immediate payoff.
+    srand(time(0));
+
     Game game;
     Controller *p1_controller, *p2_controller;
 
