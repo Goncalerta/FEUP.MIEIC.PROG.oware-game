@@ -35,7 +35,7 @@ A pit is capturable if it is in the opponent zone and contains two or three seed
 
 A legal move is a move where the chosen pit to sow is in the player's side of the board, it is non-empty and, in case the opponent's side of the board has no seeds, such move must put seeds on that side of the board. When no move is legal, the current player captures all seeds in their territory and the game ends.
 
-When both players agree that the game has been reduced to an endless cycle (which can only be claimed when both players have seeds in their holes), each player capture the seeds in the respective side of the board, ending the game.
+When both players agree that the game has been reduced to an endless cycle (which can only be claimed when both players have seeds in their holes), each player captures the seeds in the respective side of the board, ending the game.
 
 When the game ends, a gameover screen is shown for 4 seconds, declaring the winner and the score of each player. After that, the user returns to the main menu.
 
