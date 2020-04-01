@@ -103,6 +103,8 @@ Because of this, the formula is as follows, as written in the beggining of this 
 State of the project
 ==================================
 
+This project was made for and tested on the Windows 10 command prompt.
+
 The project includes adapted parts of the code provided by the teacher on moodle which facilitates printing colored characters and clearing the console in windows. All that code is contained in the files `cmd_utils.cpp` and `cmd_utils.h`. 
 
 All intended features have been incorporated into the project, namely:
